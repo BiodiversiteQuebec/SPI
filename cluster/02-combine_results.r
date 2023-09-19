@@ -2,6 +2,7 @@
 
 # Get all file names from /result folder
 files <- list.files("results", pattern = "*.csv", full.names = TRUE)
+files <- files[files != "results/SPI.csv" & files != "results/SPI.rds"]
 
 # Read all files into a list
 SPI_list <- lapply(files, function(x) {

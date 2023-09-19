@@ -51,7 +51,12 @@ r <- rast(species)
 r_proj <- project(r, crs(aires_prot))
 
 # Compute SPI as % of range within protected areas
-SPI <- SPI_from_range_map(r_proj, aires_prot)
+## Catch GDAL errors (bugs) and re-run 
+is_inf <- TRUE
+while (is_inf){
+    SPI <- SPI_from_range_map(r_proj, aires_prot)
+    is_inf <- any(is.infinite(SPI))
+}
 
 
 #------------------------------------------------------------------------------
