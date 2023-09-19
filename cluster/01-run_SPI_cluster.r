@@ -8,9 +8,8 @@ array_id <- as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 #------------------------------------------------------------------------------
 library(terra)
 library(sf)
-library(dplyr)
 library(geos)
-#source("scr/plot_range_map.r")
+# source("scr/plot_range_map.r")
 source("scr/utils-comp_SPI.r")
 source("scr/utils-format_spatial.r")
 
