@@ -12,7 +12,9 @@ Alternatively, computations may be ran using clusters with the `start.sh` script
 
 ## Access results
 
-Results are saved in csv files per species in the `results` folder. They may be assembled as a single dataframe using the `cluster/02-combine_results.r`.
+SPI values per species are saved in dataframe `results/SPI.csv`.
+
+Results are also saved in csv files per species in the `results` folder. They may be assembled as a single dataframe using the `cluster/02-combine_results.r`.
 
 ```r
 # Combine results
