@@ -29,4 +29,4 @@ rownames(SPI) <- sp_names
 
 # Save SPI to results directory
 saveRDS(SPI, "results/SPI.rds")
-write.csv(SPI, "results/SPI.csv")
+write.csv(SPI, "results/SPI.csv", row.names = TRUE)
