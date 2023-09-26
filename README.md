@@ -22,6 +22,8 @@ source("cluster/02-combine_results.r")
 
 # View results
 (SPI <- read.csv("results/SPI.csv"))
+
+source("scr/utils-visualisation.r")
 plot_SPI_time_series() # Time series of SPI values by species
 plot_SPI_scores(year = 2000) # Histogram of SPI scores for a given year
 plot_SPI_by_group() # Time series of SPI values devided by species groups
