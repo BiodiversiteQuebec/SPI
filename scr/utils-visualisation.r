@@ -96,10 +96,11 @@ plot_SPI_scores <- function(year) {
     hist(SPI[,as.character(year)], breaks = 20, main = paste("SPI scores in", year),
         xlab = "SPI score", ylab = "Number of species")
 
-    par(mfrow = c(4,8))
+    old_par <- par()
+    par(mfrow = c(2,3))
     for (year in names) {
         breaks <- c("1992", "1998", "2003", "2008", "2012", "2017")
-        if(year !%in% breaks) {
+        if(!(year %in% breaks)) {
             next
         } else {
             hist(SPI[,as.character(year)], breaks = 20, 
@@ -107,7 +108,8 @@ plot_SPI_scores <- function(year) {
             xlab = "SPI score", ylab = "Number of species",
             xlim = c(0, 0.2))
         }
-    }    
+    }   
+    par(old_par) 
 }
 
 
