@@ -52,6 +52,7 @@ plot_range_map <- function(range_map, layer = NULL, base_map = NULL) {
 plot_SPI_time_series <- function(...) {
     SPI <- read.csv("results/SPI.csv")[,-1]
 
+    names <- as.character(1992:2017)
     years <- as.numeric(1992:2017)
     names(SPI) <- names
 
@@ -81,13 +82,12 @@ plot_SPI_time_series <- function(...) {
 # Plot Species Protection Scores
 #
 # Arguments:
-#   - year: year to plot
 #
 # Author: Victor Cameron
 # Date: 2023-08-24
 ###############################################################################
 
-plot_SPI_scores <- function(year) {
+plot_SPI_scores <- function() {
     SPI <- read.csv("results/SPI.csv")[,-1]
 
     names <- as.character(1992:2017)
@@ -117,7 +117,6 @@ plot_SPI_scores <- function(year) {
 # Plot Species Protection Scores by group
 #
 # Arguments:
-#   - year: year to plot
 #
 # Author: Victor Cameron
 # Date: 2023-08-24
@@ -131,7 +130,7 @@ plot_SPI_by_group <- function() {
     groups_of_interest <- c("oiseau_proie", "milieux_humides", "forestiers", "prairie", "insectivores")
     names(groups_of_interest) <- c("Birds of prey", "Wetland species", "Forest species", "Prairie species", "Insectivores")
 
-    years <- as.numeric(1992:2017)
+    names <- as.numeric(1992:2017)
     names(SPI) <- names
 
     old_par <- par()
@@ -172,7 +171,6 @@ plot_SPI_by_group <- function() {
 # Plot Species at risk (CDPNQ)
 #
 # Arguments:
-#   - year: year to plot
 #
 # Author: Victor Cameron
 # Date: 2023-08-24
@@ -189,7 +187,7 @@ plot_SPI_at_risk <- function() {
     SPI <- SPI[,-1]
 
     years <- as.numeric(1992:2017)
-    names(SPI) <- names
+    names(SPI) <- years
 
     # Subset the data
     which_rows <- which(rownames(SPI) %in% cdpnq_list)
