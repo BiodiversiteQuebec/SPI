@@ -1,77 +1,84 @@
-
-#------------------------------------------------------------------------------
-# 1. Load libraries
-#------------------------------------------------------------------------------
-library(terra)
-library(sf)
-library(dplyr)
-library(geos)
-source("scr/plot_range_map.r")
-source("scr/utils-comp_SPI.r")
-source("scr/utils-format_spatial.r")
-
-#------------------------------------------------------------------------------
-# 2. Load data
-#------------------------------------------------------------------------------
-
-# Get the list of files in the data/range_maps folder (species range maps)
-# These maps were extracted from original results of Vincent Bellavance using the 'utils-extract_data.r' script
-range_maps <- list.files("data/range_maps", pattern = ".tif$", full.names = TRUE)
-
-# Get the protected areas polygons
-if (!file.exists("data/aires_union.gpkg")) {
-    # If the union of protected areas does not exist then create it
-    aires_prot <- read_sf("data/registre_aires_prot.gpkg", layer = "AP_REG_S") |>
-        union_polygons() |>
-        st_cast("POLYGON")
-    st_write(aires_prot, "data/aires_union.gpkg", driver = "GPKG")
-} else {
-    aires_prot <- st_read("data/aires_union.gpkg", promote_to_multi = FALSE)
-}
-
-
-#------------------------------------------------------------------------------
-# 3. Explore the data
-#------------------------------------------------------------------------------
-
-# Visualise the first raster
-range_map1 <- rast(range_maps[1])
-# Load the Quebec map
-qc_map <- sf::read_sf("data/QUEBEC_CR_NIV_01.gpkg") |> union_polygons()
-# Reproject the sf object to match the coordinate system of the SpatRaster
-r_proj <- project(range_map1, crs(qc_map))
-# Visualise the first layer
-plot_range_map(r_proj, layer = "X1992", base_map = qc_map)
-
-
-#------------------------------------------------------------------------------
-# 3. Compute SPI
+# Function to run SPI computation
 #
-# This code loops through species to compute SPI for each year
-#------------------------------------------------------------------------------
-
-SPI_list <- list()
-for(species in range_maps) {
-    sp_name <- sub(".*/(.*)(\\.tif)", "\\1", species)
-    which_sp <- which(species == range_maps)
-    cat("Computing SPI for", sp_name, " (", which_sp, "/", length(range_maps), ")\n")
-
-    r <- rast(species)
-
-    # Reproject the sf object to match the coordinate system of the SpatRaster
-    r_proj <- project(r, crs(aires_prot))
-
-    # Compute SPI as % of range within protected areas
-    SPI <- SPI_from_range_map(r_proj, aires_prot)
-    SPI_list[[sp_name]] <- SPI
-
-    # Save SPI to results directory
-    write.csv(SPI, paste0("results/", sp_name, "_SPI.csv"))
+# Parameters:
+# - SPECIES: A character vector specifying the species of interest.
+# - YEAR: An integer specifying the year of interest.
+# - PROTECTED_AREA_TYPE: A character vector specifying the type of protected area.
+# - UNION: A logical value indicating whether to perform a union of protected areas.
+#
+# Returns:
+# - A dataframe representing the SPI value.
+#
+run_SPI_computation <- function(SPECIES, YEAR, PROTECTED_AREA_TYPE = "", UNION = FALSE){
+    #------------------------------------------------------------------------------
+    # 1. Load libraries
+    #------------------------------------------------------------------------------
+    library(sf)
+    
+    #------------------------------------------------------------------------------
+    # 2. Load range_maps
+    #
+    # Range maps were first extracted using the "scr/utils-extract_data.r" script
+    #------------------------------------------------------------------------------
+    # Species Range maps
+    range_maps <- st_read("data_clean/aires_repartition.gpkg", quiet = TRUE)
+    
+    # Subset species
+    range_maps <- range_maps[range_maps$NOM_SCIENT %in% SPECIES,]
+    
+    #------------------------------------------------------------------------------
+    # 3. Load protected areas
+    #------------------------------------------------------------------------------
+    if(UNION & PROTECTED_AREA_TYPE == "" & file.exists("data_clean/aires_union.gpkg")) {
+        # Select all protected areas
+        aires_prot <- st_read("data_clean/aires_union.gpkg", promote_to_multi = FALSE, quiet = TRUE)
+        
+        # Subset years of interest
+        aires_prot <- aires_prot[aires_prot$annee_creation <= YEAR,]
+    } else {
+        # Protected areas
+        aires_prot <- st_read("data_raw/registre_aires_prot.gpkg", layer = "AP_REG_S", quiet = TRUE)
+        
+        # Select protected areas by year 
+        aires_prot$annee_creation <- as.numeric(substr(aires_prot$DA_CREATIO, start = 1, stop = 4))
+        aires_prot <- aires_prot[aires_prot$annee_creation <= YEAR,]
+        
+        # Select protected areas by type
+        if (PROTECTED_AREA_TYPE != "") {
+            aires_prot <- aires_prot[aires_prot$DESIG_GR %in% PROTECTED_AREA_TYPE,]
+        }
+        
+        # Union of protected areas ?
+        if (UNION) {
+            aires_prot <- aires_prot |> st_union() |> st_as_sf() |> suppressWarnings()
+        }
+    }
+    
+    #------------------------------------------------------------------------------
+    # 3. Compute SPI
+    #
+    # This code loops through species to compute SPI for each year
+    #------------------------------------------------------------------------------
+    cat("Computing SPI for", SPECIES, YEAR, "\n")
+    
+    # Compute SPI as a proportion of range within protected areas
+    intersect <- suppressWarnings(sf::st_intersection(range_maps, aires_prot))
+    SPA <- sf::st_area(intersect) |> as.numeric() |> sum() |> suppressWarnings()
+    SPI <- SPA / sum(as.numeric(sf::st_area(range_maps)))
+    
+    cat("SPI is", SPI, "\n")
+    
+    return(data.frame(
+        SPECIES = SPECIES,
+        SPI = SPI,
+        YEAR = YEAR,
+        SELECTED_PROTECTED_AREA_TYPE = PROTECTED_AREA_TYPE,
+        UNION = UNION))
 }
 
-SPI <- do.call(rbind, SPI_list)
-
-
-# Save SPI to results directory
-saveRDS(SPI, "results/SPI.rds")
-write.csv(SPI, "results/SPI.csv")
+# Test SPI computation
+# SPECIES = "Anaxyrus americanus" # Species analyzed
+# YEAR = 1990 # Years of creation of protected areas of interest (all years before this year will also be considered)
+# PROTECTED_AREA_TYPE = c("Parc national du Québec") # Types of protected areas to consider (unique(aires_prot$DESIG_GR))
+# UNION = TRUE # Union of protected areas ?
+# SPI <- run_SPI_computation(SPECIES, YEAR, PROTECTED_AREA_TYPE, UNION)

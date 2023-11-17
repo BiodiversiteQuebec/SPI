@@ -5,14 +5,25 @@ The SPI biodiversity indicator measures the protected species habitat. It is com
 
 ## Run computations
 
-Computations may be ran from a personal computer with the `01-run_spi_computation.r` script in the `scr` folder. 
+Computations may be ran from a personal computer with the `run_SPI_computation` function.
+
+```r
+source("scr/01-run_SPI_computation.r")
+
+SPECIES = "Anaxyrus americanus" # Species analyzed
+YEAR = 1990 # Years of creation of protected areas of interest (all years before this year will also be considered)
+PROTECTED_AREA_TYPE = c("Parc national du Québec") # Types of protected areas to consider (unique(aires_prot$DESIG_GR))
+UNION = FALSE # Union all protected areas ?
+
+run_SPI_computation(SPECIES, YEAR, PROTECTED_AREA_TYPE, UNION)
+```
 
 Alternatively, computations may be ran using clusters with the `start.sh` script in the `cluster` folder.
 
 
 ## Access results
 
-SPI values per species are saved in dataframe `results/SPI.csv`.
+When ran on clusters, yearly SPI values per species are saved in dataframe `results/SPI.csv`.
 
 Results are also saved in csv files per species in the `results` folder. They may be assembled as a single dataframe using the `cluster/02-combine_results.r`.
 
@@ -36,17 +47,25 @@ plot_SPI_at_risk() # Time series of SPI values for species at risk
 
 ## Data
 
-All data needed for the analyses are available in the `data` folder.
+All data needed for the analyses are available in the `data_raw` folder.
 
-As an initial proof of concept, the indicator is computed for the 1992-2018 period from whole range maps. These range maps were produced by Vencent Bellavance from occurence data from [Biodiversité Québec](https://biodiversite-quebec.ca/). The range maps are available in the `data` folder where each `.tif` file is named after a species and contains 26 layers, one for every year between 1992 and 2018. 
+### Range Maps
 
-The protected areas are from the données ouvertes portal of the gouvernement du Québec and are also available in the `data` folder. Only the 'Aires protégées du registre' layer was used and **no distinction is made between the different types of protected areas** . The dataset was downloaded on 31-08-2023.
+The range maps were obtained from [donneesquebec](https://www.donneesquebec.ca/recherche/dataset/aires-de-repartition-faune) web portal and were downloaded on November 13th, 2023. These range maps were produced by the MELCCFP and were last updated on 2023-09-11. These range maps are available in the `data_raw` folder where each `.gpkg` file is named after a species group with 8 fields :
+
+- DESC_ENTIT : Signification de l’entité géographique
+- GRAND_GROUPE : Classification taxonomique
+- PRODUCTEUR : Ministère producteur des données
+- NOM_FRANCA : Nom français officiel de l’espèce utilisé au Québec
+- NOM_ANGLA : Nom anglais de l’espèce
+- NOM_SCIENT : Nom scientifique de l’espèce
+- FAMILLE : Famille de l'espèce dans le système de classification
+- DATE_MAJ : Année de mise à jour des données
+
+### Protected Areas
+
+The protected areas were downloaded from the [donneesquebec](https://www.donneesquebec.ca/recherche/dataset/aires-protegees-au-quebec) web portal on November 13, 2023 and was last updated on 2023-11-03. Downloaded data is available in the `data_raw` folder. Only the 'Aires protégées du registre' layer was used and **no distinction is made between the different types of protected areas**.
 
 ### Data treatment
 
-Protected areas dataset contains multiple types of protected areas that may overlap. Overlap would duplicate the protected area and bias the SPI computation. To remove overlap between the different protected areas, the `geos_unary_union` function from the `geos` package was used to union overlapping polygons. The resulting layer is available in the `data` folder as `aires_union.gpkg`.
-
-
-## TODO
-
-- [ ] Select types of protected areas to include in the analyses
+Protected areas dataset contains multiple types of protected areas that may overlap. Overlap would duplicate the protected area and bias the SPI computation. To remove overlap between the different protected areas, the `st_union` function from the `sf` package was used to union overlapping polygons. The resulting layer is available in the `data` folder as `aires_union.gpkg`.
