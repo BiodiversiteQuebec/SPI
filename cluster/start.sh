@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --array=1-13725
+#SBATCH --array=1-225
 #SBATCH --account=def-dgravel
 #SBATCH -t 00:30:00
 #SBATCH --mem=1024

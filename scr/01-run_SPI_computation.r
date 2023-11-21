@@ -10,6 +10,8 @@
 # - A dataframe representing the SPI value.
 #
 run_SPI_computation <- function(SPECIES, YEAR, PROTECTED_AREA_TYPE = "", UNION = FALSE){
+    cat("Computing SPI for", SPECIES, "\n")
+
     #------------------------------------------------------------------------------
     # 1. Load libraries
     #------------------------------------------------------------------------------
@@ -29,51 +31,53 @@ run_SPI_computation <- function(SPECIES, YEAR, PROTECTED_AREA_TYPE = "", UNION =
     #------------------------------------------------------------------------------
     # 3. Load protected areas
     #------------------------------------------------------------------------------
-    if(UNION & PROTECTED_AREA_TYPE == "" & file.exists("data_clean/aires_union.gpkg")) {
-        # Select all protected areas
-        aires_prot <- st_read("data_clean/aires_union.gpkg", promote_to_multi = FALSE, quiet = TRUE)
+    # if(UNION & PROTECTED_AREA_TYPE == "" & file.exists("data_clean/aires_union.gpkg")) {
+    #     # Select all protected areas
+    #     aires_prot <- st_read("data_clean/aires_union.gpkg", promote_to_multi = FALSE, quiet = TRUE)
         
-        # Subset years of interest
-        aires_prot <- aires_prot[aires_prot$annee_creation <= YEAR,]
-    } else {
-        # Protected areas
-        aires_prot <- st_read("data_raw/registre_aires_prot.gpkg", layer = "AP_REG_S", quiet = TRUE)
-        
-        # Select protected areas by year 
-        aires_prot$annee_creation <- as.numeric(substr(aires_prot$DA_CREATIO, start = 1, stop = 4))
-        aires_prot <- aires_prot[aires_prot$annee_creation <= YEAR,]
-        
-        # Select protected areas by type
-        if (PROTECTED_AREA_TYPE != "") {
-            aires_prot <- aires_prot[aires_prot$DESIG_GR %in% PROTECTED_AREA_TYPE,]
-        }
-        
-        # Union of protected areas ?
-        if (UNION) {
-            aires_prot <- aires_prot |> st_union() |> st_as_sf() |> suppressWarnings()
-        }
+    #     # Subset years of interest
+    #     aires_prot <- aires_prot[aires_prot$year <= YEAR,]
+    # } else {
+    # Protected areas
+    aires_prot <- suppressWarnings(st_read("data_raw/registre_aires_prot.gpkg", layer = "AP_REG_S", quiet = TRUE))
+    
+    # Select protected areas by year 
+    aires_prot$year <- as.numeric(substr(aires_prot$DA_CREATIO, start = 1, stop = 4))
+    
+    # Select protected areas by type
+    if (PROTECTED_AREA_TYPE != "") {
+        aires_prot <- aires_prot[aires_prot$DESIG_GR %in% PROTECTED_AREA_TYPE,]
     }
     
-    #------------------------------------------------------------------------------
-    # 3. Compute SPI
-    #
-    # This code loops through species to compute SPI for each year
-    #------------------------------------------------------------------------------
-    cat("Computing SPI for", SPECIES, YEAR, "\n")
-    
-    # Compute SPI as a proportion of range within protected areas
-    intersect <- suppressWarnings(sf::st_intersection(range_maps, aires_prot))
-    SPA <- sf::st_area(intersect) |> as.numeric() |> sum() |> suppressWarnings()
-    SPI <- SPA / sum(as.numeric(sf::st_area(range_maps)))
-    
-    cat("SPI is", SPI, "\n")
-    
+    # Union of protected areas ?
+    aires_org <- aires_prot
+    spi_vect <- c()
+    for (year in YEAR){
+        aires <- aires_org[aires_org$year <= year,]
+        if (UNION) aires <- aires |> st_union() |> st_as_sf() |> suppressWarnings()
+        spi_year <- spi(range_maps, aires)
+        spi_vect <- c(spi_vect, spi_year)
+
+        cat("SPI", year, " is", spi_year, "\n")
+    }
+
     return(data.frame(
         SPECIES = SPECIES,
-        SPI = SPI,
+        SPI = spi_vect,
         YEAR = YEAR,
         SELECTED_PROTECTED_AREA_TYPE = PROTECTED_AREA_TYPE,
         UNION = UNION))
+}
+    
+#------------------------------------------------------------------------------
+# Helper function to compute SPI
+#------------------------------------------------------------------------------    
+spi <- function(range_maps, aires_prot){    
+    intersect <- suppressWarnings(sf::st_intersection(range_maps, aires_prot))
+    SPA <- sf::st_area(intersect) |> as.numeric() |> suppressWarnings()
+    SPI <- SPA / sum(as.numeric(sf::st_area(range_maps)))
+    
+    return(SPI)
 }
 
 # Test SPI computation
