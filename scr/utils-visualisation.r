@@ -34,28 +34,28 @@ plot_range_map <- function(range_map, base_map = NULL) {
 plot_SPI_time_series <- function(...) {
     SPI <- read.csv("results/SPI.csv")[,-1]
 
-    names <- as.character(1992:2017)
-    years <- as.numeric(1992:2017)
-    names(SPI) <- names
+    names <- as.character(unique(SPI$SPECIES))
+    years <- as.numeric(unique(SPI$YEAR))
 
-    plot(years, SPI[1,], ylim = c(0,0.2),
+    plot(years, SPI$SPI[SPI$SPECIES == names[1]], ylim = c(0,0.7),
         type='l', col='lightgrey',
-        xlab='Year', ylab='SPI',
-        ...)
-    for (i in 2:dim(SPI)[1]) {
-        lines(years, SPI[i,], type='l', col='lightgrey')
+        xlab='Year', ylab='SPI', ...)
+    for (i in names[-1]) {
+        lines(years, SPI$SPI[SPI$SPECIES == i], type='l', col='lightgrey')
     }
 
     # Stransform the data to a long format
-    SPI_long <- reshape2::melt(SPI)
-    names(SPI_long) <- c("year", "SPI")
-    SPI_long$year <- sub("X", "", SPI_long$year) |> as.numeric()
+    year_mean <- c()
+    for (i in years) {
+        sub_year <- SPI$SPI[SPI$YEAR == i]
+        year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
+    }
 
     # Add a treandline
     ## Mean
-    lines(years, colMeans(SPI, na.rm = TRUE), type='l', col='black', lwd=2)
+    lines(years, year_mean, type='l', col='black', lwd=2)
     ## Linear regression
-    lm(SPI_long$SPI ~ SPI_long$year) |> abline(lwd=2, col='red', lty=2)
+    lm(SPI$SPI ~ SPI$YEAR) |> abline(lwd=2, col='red', lty=2)
 
 }
 
@@ -72,26 +72,26 @@ plot_SPI_time_series <- function(...) {
 plot_SPI_scores <- function() {
     SPI <- read.csv("results/SPI.csv")[,-1]
 
-    names <- as.character(1992:2017)
-    names(SPI) <- names
-
-    hist(SPI[,as.character(year)], breaks = 20, main = paste("SPI scores in", year),
-        xlab = "SPI score", ylab = "Number of species")
-
+    years <- as.numeric(unique(SPI$YEAR))
+    
     old_par <- par()
     par(mfrow = c(2,3))
-    for (year in names) {
-        breaks <- c("1992", "1998", "2003", "2008", "2012", "2017")
+
+    hist(SPI$SPI, breaks = 20, main = paste("All SPI scores"),
+        xlab = "SPI score", ylab = "Number of species")
+
+    for (year in years) {
+        breaks <- c("1950", "1980", "1990", "2000", "2010", "2020")
         if(!(year %in% breaks)) {
             next
         } else {
-            hist(SPI[,as.character(year)], breaks = 20, 
-            main = paste("SPI scores in", year),
-            xlab = "SPI score", ylab = "Number of species",
-            xlim = c(0, 0.2))
+            hist(SPI$SPI[SPI$YEAR == year], breaks = seq(0,1, by = 0.05), 
+                main = paste("SPI scores in", year),
+                xlab = "SPI score", ylab = "Number of species",
+                xlim = c(0, 0.4))
         }
     }   
-    par(old_par) 
+    suppressWarnings(par(old_par) )
 }
 
 
@@ -105,15 +105,11 @@ plot_SPI_scores <- function() {
 ###############################################################################
 
 plot_SPI_by_group <- function() {
-    SPI <- read.csv("results/SPI.csv")
-    rownames(SPI) <- SPI[,1]
-    SPI <- SPI[,-1]
-    groups <- read.csv("data/sp_groups.csv", sep = ";", header = TRUE)
-    groups_of_interest <- c("oiseau_proie", "milieux_humides", "forestiers", "prairie", "insectivores")
-    names(groups_of_interest) <- c("Birds of prey", "Wetland species", "Forest species", "Prairie species", "Insectivores")
-
-    names <- as.numeric(1992:2017)
-    names(SPI) <- names
+    SPI <- read.csv("results/SPI.csv")[,-1]
+    groups <- list(Amphibiens = "data_raw/Aires_repartition_amphibiens.gpkg",
+        Mammifères_terrestres = "data_raw/Aires_repartition_MT.gpkg",
+        Poissons_eau_douce = "data_raw/Aires_repartition_poisson_eau_douce.gpkg",
+        Reptiles = "data_raw/Aires_repartition_reptiles.gpkg")
 
     old_par <- par()
     par(mfrow = c(2,3))
@@ -122,30 +118,40 @@ plot_SPI_by_group <- function() {
     plot_SPI_time_series(main = "All species")
 
     # Plot species by group
-    for (i in seq_along(groups_of_interest)) {
-        which_rows <- which(rownames(SPI) %in% groups[!is.na(groups[,groups_of_interest[i]]),"species"])
+    for (i in seq_along(groups)) {
+        group_members <- sf::read_sf(groups[i])$NOM_SCIENT
+        which_rows <- which(SPI$SPECIES %in% group_members)
         sub <- SPI[which_rows,] 
+        sub_sp <- unique(sub$SPECIES)
 
-        plot(years, sub[1,], ylim = c(0,0.2),
+        # Plot first line
+        plot(sub$YEAR[sub$SPECIES == sub_sp[1]], sub$SPI[sub$SPECIES == sub_sp[1]], ylim = c(0,0.7),
         type='l', col='lightgrey',
         xlab='Year', ylab='SPI',
-        main = names(groups_of_interest)[i])
-        for (i in 2:dim(sub)[1]) {
-            lines(years, sub[i,], type='l', col='lightgrey')
+        main = names(groups)[i])
+        for (sp in sub_sp) {
+            lines(sub$YEAR[sub$SPECIES == sp], sub$SPI[sub$SPECIES == sp], type='l', col='lightgrey')
         }
 
-            # Stransform the data to a long format
-            sub_long <- reshape2::melt(sub)
-            names(sub_long) <- c("year", "SPI")
-            sub_long$year <- sub("X", "", sub_long$year) |> as.numeric()
+        # Add lines for each species
+        years <- unique(sub$YEAR)
+        year_mean <- c()
+        for (i in years) {
+            sub_year <- sub$SPI[sub$YEAR == i]
+            year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
+        }
 
-            # Add a treandline
-            ## Mean
-            lines(years, colMeans(sub, na.rm = TRUE), type='l', col='black', lwd=2)
-            ## Linear regression
-            lm(sub_long$SPI ~ sub_long$year) |> abline(lwd=2, col='red', lty=2)
+        # Add a treandline
+        ## Mean
+        lines(years, year_mean, type='l', col='black', lwd=2)
+        ## Linear regression
+        lm(sub$SPI ~ sub$YEAR) |> abline(lwd=2, col='red', lty=2)
     }
-    par(old_par)
+
+    # Plot protected area
+    plot_protected_area()
+
+    suppressWarnings(par(old_par))
 }
 
 
@@ -193,4 +199,39 @@ plot_SPI_at_risk <- function() {
     lines(years, colMeans(sub, na.rm = TRUE), type='l', col='black', lwd=2)
     ## Linear regression
     lm(sub_long$SPI ~ sub_long$year) |> abline(lwd=2, col='red', lty=2)
+}
+
+
+###############################################################################
+# Plot protected area time series
+#
+# Arguments:
+#
+# Author: Victor Cameron
+# Date: 2023-08-24
+###############################################################################
+
+plot_protected_area <- function() {
+    prot_area <- sf::read_sf("data_raw/registre_aires_prot.gpkg")
+
+    time_series <- prot_area[,c("DA_CREATIO", "HA_LEGAL")] |> as.data.frame()
+    time_series$annee <- as.numeric(substr(time_series$DA_CREATIO, start = 1, stop = 4))
+
+    area <- c()
+    for(i in unique(time_series$annee)) {
+        sum <- sum(time_series$HA_LEGAL[time_series$annee == i])
+        area <- c(area, sum)
+    }
+
+    dat <- data.frame(
+        annee = unique(time_series$annee),
+        area = area)
+    
+    dat <- dat[order(dat$annee),]
+    dat$area_cum <- cumsum(area)
+    names(dat) <- c("annee", "area", "area_cum")
+    
+
+    plot(dat$annee, dat$area_cum, col = "black",
+        xlab = "Year", ylab = "Area (Ha)", main = "Protected area in Quebec")
 }

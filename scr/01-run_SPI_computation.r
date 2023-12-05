@@ -2,7 +2,7 @@
 #
 # Parameters:
 # - SPECIES: A character vector specifying the species of interest.
-# - YEAR: An integer specifying the year of interest.
+# - YEAR: An integer vector specifying the year(s) of interest.
 # - PROTECTED_AREA_TYPE: A character vector specifying the type of protected area.
 # - UNION: A logical value indicating whether to perform a union of protected areas.
 #
@@ -52,7 +52,8 @@ run_SPI_computation <- function(SPECIES, YEAR, PROTECTED_AREA_TYPE = "", UNION =
     # Union of protected areas ?
     aires_org <- aires_prot
     spi_vect <- c()
-    for (year in YEAR){
+    YEAR_sp <- YEAR[YEAR %in% aires_org$year] # Subset to years specifific to the sp.
+    for (year in YEAR_sp){
         aires <- aires_org[aires_org$year <= year,]
         if (UNION) aires <- aires |> st_union() |> st_as_sf() |> suppressWarnings()
         spi_year <- spi(range_maps, aires)
@@ -64,7 +65,7 @@ run_SPI_computation <- function(SPECIES, YEAR, PROTECTED_AREA_TYPE = "", UNION =
     return(data.frame(
         SPECIES = SPECIES,
         SPI = spi_vect,
-        YEAR = YEAR,
+        YEAR = YEAR_sp,
         SELECTED_PROTECTED_AREA_TYPE = PROTECTED_AREA_TYPE,
         UNION = UNION))
 }
@@ -75,6 +76,9 @@ run_SPI_computation <- function(SPECIES, YEAR, PROTECTED_AREA_TYPE = "", UNION =
 spi <- function(range_maps, aires_prot){    
     intersect <- suppressWarnings(sf::st_intersection(range_maps, aires_prot))
     SPA <- sf::st_area(intersect) |> as.numeric() |> suppressWarnings()
+    
+    if (length(SPA) == 0) return(0)
+
     SPI <- SPA / sum(as.numeric(sf::st_area(range_maps)))
     
     return(SPI)
