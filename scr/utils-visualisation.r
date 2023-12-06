@@ -72,7 +72,7 @@ plot_SPI_time_series <- function(...) {
 plot_SPI_scores <- function() {
     SPI <- read.csv("results/SPI.csv")[,-1]
 
-    years <- as.numeric(unique(SPI$YEAR))
+    years <- as.numeric(unique(SPI$YEAR)) |> sort()
     
     old_par <- par()
     par(mfrow = c(2,3))
@@ -234,4 +234,58 @@ plot_protected_area <- function() {
 
     plot(dat$annee, dat$area_cum, col = "black",
         xlab = "Year", ylab = "Area (Ha)", main = "Protected area in Quebec")
+}
+
+
+# Represent SPI for northern and southern species
+###############################################################################
+# Plot SPI for northern and southern species
+#
+# Arguments:
+#
+# - SPI: SPI data frame
+#
+# Author: Victor Cameron
+# Date: 2023-08-24
+###############################################################################
+plot_SPI_regions <- function(SPI, ...) {
+
+    aires_prot <- suppressWarnings(st_read("data_raw/registre_aires_prot.gpkg", layer = "AP_REG_S", quiet = TRUE))
+    range_maps <- st_read("data_clean/aires_repartition.gpkg", quiet = TRUE)
+    SPI <- read.csv("results/SPI.csv")[,-1]
+
+    # Which areas are in the north and south of the country?
+    # We use the latitude of the center of the area to determine this. Then convert to degrees
+    st_centroid(range_maps[1,]) |> st_coordinates() 
+    centroid <- range_maps |> st_transform(4326) |> st_make_valid() |> st_centroid() |> st_coordinates() 
+    southern_range <- which(centroid[,2] <= 50)
+    southern_sp <- range_maps[southern_range,] |> st_drop_geometry() |> dplyr::select(NOM_SCIENT) |> unique() |> unlist()
+    northern_range <- which(centroid[,2] > 50)
+    northern_sp <- range_maps[northern_range,] |> st_drop_geometry() |> dplyr::select(NOM_SCIENT) |> unique() |> unlist()
+    # Isolate the two first characters of the LATDMS column
+    southern_aires <- which(substr(aires_prot$LATDMS, 1, 2) <= 50)
+    northern_aires <- which(substr(aires_prot$LATDMS, 1, 2) > 50)
+
+    names <- as.character(unique(SPI$SPECIES))
+    years <- as.numeric(unique(SPI$YEAR)) |> sort()
+
+    plot(SPI$YEAR[SPI$SPECIES == names[1]], SPI$SPI[SPI$SPECIES == names[1]], ylim = c(0,0.7),
+        type='l', col='lightgrey',
+        xlab='Year', ylab='SPI', ...)
+    for (i in names[-1]) {
+        lines(SPI$YEAR[SPI$SPECIES == i], SPI$SPI[SPI$SPECIES == i], type='l', col='lightgrey')
+    }
+
+    # Transform the data to a long format
+    year_mean <- c()
+    for (i in years) {
+        sub_year <- SPI$SPI[SPI$YEAR == i]
+        year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
+    }
+
+    # Add a treandline
+    ## Mean
+    lines(years, year_mean, type='l', col='black', lwd=2)
+    ## Linear regression
+    lm(SPI$SPI ~ SPI$YEAR) |> abline(lwd=2, col='red', lty=2)
 }
