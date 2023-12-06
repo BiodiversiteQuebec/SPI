@@ -1,4 +1,4 @@
-# Computation of the SPI indicator for the 1992-2017 period
+# Computation of the SPI indicator
 
 The SPI biodiversity indicator measures the protected species habitat. It is computed as the ratio of the protected species habitat area to the total area of the species habitat. 
 
@@ -40,9 +40,10 @@ source("scr/utils-visualisation.r")
 (SPI <- read.csv("results/SPI.csv"))
 
 plot_SPI_time_series() # Time series of SPI values by species
-plot_SPI_scores(year = 2000) # Histogram of SPI scores for a given year
+plot_SPI_scores() # Histogram of SPI scores for a given year
 plot_SPI_by_group() # Time series of SPI values devided by species groups
-plot_SPI_at_risk() # Time series of SPI values for species at risk
+# plot_SPI_at_risk() # Time series of SPI values for species at risk
+plot_SPI_regions() # Time series of SPI values for south and north regions
 ```
 
 ## Data
