@@ -23,10 +23,10 @@ run_SPI_computation <- function(SPECIES, YEAR, PROTECTED_AREA_TYPE = "", UNION =
     # Range maps were first extracted using the "scr/utils-extract_data.r" script
     #------------------------------------------------------------------------------
     # Species Range maps
-    range_maps <- st_read("data_clean/aires_repartition.gpkg", quiet = TRUE)
+    occurences <- st_read("data_raw/emvs_dq.gpkg", quiet = TRUE)
     
     # Subset species
-    range_maps <- range_maps[range_maps$NOM_SCIENT %in% SPECIES,]
+    occurences_sp <- occurences[occurences$SNAME %in% SPECIES,]
     
     #------------------------------------------------------------------------------
     # 3. Load protected areas
@@ -56,7 +56,7 @@ run_SPI_computation <- function(SPECIES, YEAR, PROTECTED_AREA_TYPE = "", UNION =
     for (year in YEAR_sp){
         aires <- aires_org[aires_org$year <= year,]
         if (UNION) aires <- aires |> st_union() |> st_as_sf() |> suppressWarnings()
-        spi_year <- spi(range_maps, aires)
+        spi_year <- spi(occurences_sp, aires)
         spi_vect <- c(spi_vect, spi_year)
 
         cat("SPI", year, " is", spi_year, "\n")
@@ -75,7 +75,7 @@ run_SPI_computation <- function(SPECIES, YEAR, PROTECTED_AREA_TYPE = "", UNION =
 #------------------------------------------------------------------------------    
 spi <- function(range_maps, aires_prot){    
     intersect <- suppressWarnings(sf::st_intersection(range_maps, aires_prot))
-    SPA <- sf::st_area(intersect) |> as.numeric() |> suppressWarnings()
+    SPA <- sf::st_area(intersect) |> as.numeric() |> suppressWarnings() |> sum()
     
     if (length(SPA) == 0) return(0)
 

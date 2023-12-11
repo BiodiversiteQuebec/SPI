@@ -50,18 +50,12 @@ plot_SPI_regions() # Time series of SPI values for south and north regions
 
 All data needed for the analyses are available in the `data_raw` folder.
 
-### Range Maps
+### Occurences
 
-The range maps were obtained from [donneesquebec](https://www.donneesquebec.ca/recherche/dataset/aires-de-repartition-faune) web portal and were downloaded on November 13th, 2023. These range maps were produced by the MELCCFP and were last updated on 2023-09-11. These range maps are available in the `data_raw` folder where each `.gpkg` file is named after a species group with 8 fields :
+Occurences were downloaded from the [donneesquebec](https://www.donneesquebec.ca/recherche/dataset/occurrences-especes-en-situation-precaire) web portal on December 06, 2023 and was last updated on 2023-11-30. Downloaded data is available in the `data_raw` folder as `emvs_dq.gpkg`. 
 
-- DESC_ENTIT : Signification de l’entité géographique
-- GRAND_GROUPE : Classification taxonomique
-- PRODUCTEUR : Ministère producteur des données
-- NOM_FRANCA : Nom français officiel de l’espèce utilisé au Québec
-- NOM_ANGLA : Nom anglais de l’espèce
-- NOM_SCIENT : Nom scientifique de l’espèce
-- FAMILLE : Famille de l'espèce dans le système de classification
-- DATE_MAJ : Année de mise à jour des données
+Metadata for the occurences dataset is available in the `data_raw` folder as `metadonnees_cdpnq.xlsx`.
+
 
 ### Protected Areas
 
