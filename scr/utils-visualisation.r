@@ -32,7 +32,7 @@ plot_range_map <- function(range_map, base_map = NULL) {
 ###############################################################################
 
 plot_SPI_time_series <- function(...) {
-    SPI <- read.csv("results/SPI.csv")[,-1]
+    SPI <- read.csv("results/SPI.csv")
 
     names <- as.character(unique(SPI$SPECIES))
     years <- as.numeric(unique(SPI$YEAR))
@@ -105,36 +105,34 @@ plot_SPI_scores <- function() {
 ###############################################################################
 
 plot_SPI_by_group <- function() {
-    SPI <- read.csv("results/SPI.csv")[,-1]
-    groups <- list(Amphibiens = "data_raw/Aires_repartition_amphibiens.gpkg",
-        Mammifères_terrestres = "data_raw/Aires_repartition_MT.gpkg",
-        Poissons_eau_douce = "data_raw/Aires_repartition_poisson_eau_douce.gpkg",
-        Reptiles = "data_raw/Aires_repartition_reptiles.gpkg")
+    library(sf)
+    SPI <- read.csv("results/SPI.csv")
+    occurences <- st_read("data_raw/emvs_dq.gpkg", quiet = TRUE)
+    groups <- unique(occurences$GGROUPE)
 
     old_par <- par()
-    par(mfrow = c(2,3))
+    par(mfrow = c(2,4))
 
     # Plot all species
     plot_SPI_time_series(main = "All species")
 
     # Plot species by group
     for (i in seq_along(groups)) {
-        group_members <- sf::read_sf(groups[i])$NOM_SCIENT
-        which_rows <- which(SPI$SPECIES %in% group_members)
+        which_rows <- which(occurences$GGROUPE == groups[i])
         sub <- SPI[which_rows,] 
         sub_sp <- unique(sub$SPECIES)
 
         # Plot first line
-        plot(sub$YEAR[sub$SPECIES == sub_sp[1]], sub$SPI[sub$SPECIES == sub_sp[1]], ylim = c(0,0.7),
+        plot(sub$YEAR[sub$SPECIES == sub_sp[1]], sub$SPI[sub$SPECIES == sub_sp[1]], ylim = c(0,1),
         type='l', col='lightgrey',
         xlab='Year', ylab='SPI',
-        main = names(groups)[i])
+        main = groups[i])
         for (sp in sub_sp) {
             lines(sub$YEAR[sub$SPECIES == sp], sub$SPI[sub$SPECIES == sp], type='l', col='lightgrey')
         }
 
         # Add lines for each species
-        years <- unique(sub$YEAR)
+        years <- unique(sub$YEAR) |> sort()
         year_mean <- c()
         for (i in years) {
             sub_year <- sub$SPI[sub$YEAR == i]
