@@ -112,11 +112,11 @@ SPI <- read.csv("results/SPI.csv")[, -1]
 
 # for segregation btw North and South
 # We use the latitude of the center of the area to determine this. Then convert to degrees and compare with lat 50 (aprox of tree line)
-centroid <- range_maps |>
-    st_transform(4326) |>
-    st_make_valid() |>
-    st_centroid() |>
-    st_coordinates()
+# centroid <- range_maps |>
+#     st_transform(4326) |>
+#     st_make_valid() |>
+#     st_centroid() |>
+#     st_coordinates() # long !!!!
 
 southern_sp <- range_maps[which(centroid[, 2] <= 50), ] |>
     st_drop_geometry() |>
@@ -136,6 +136,9 @@ names(spe_loc) <- c("SPECIES", "LOC")
 # left join between last_spi & spe_loc
 last_spi <- left_join(last_spi, spe_loc, by = "SPECIES")
 
+# write.csv2(last_spi,
+#             "/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/SPI_north_south.csv")
+last_spi <- read.csv2("/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/SPI_north_south.csv")
 # barplot production
 # ------------------
 
@@ -149,9 +152,9 @@ barplot(last_spi$SPI,
     xlab = "SPI",
     ylab = "Espèce"
 )
-abline(v = 0.3, col = "darkgrey", lty = "dotted", lwd = 2)
+abline(v = 0.17, col = "darkgrey", lty = "dotted", lwd = 2)
 legend("bottomright",
-    legend = c("Espèce nordique", "Espèce sudiste"),
+    legend = c("Espèce nordique", "Espèce du sud"),
     fill = c("#37c9ae", "darkorange"),
     border = c("#37c9ae", "darkorange"),
     bty = "n"
@@ -160,9 +163,12 @@ legend("bottomright",
 #### Figure 3 ####
 # --> map of protected areas
 aires_prot <- suppressWarnings(st_read("data_raw/registre_aires_prot.gpkg", layer = "AP_REG_S", quiet = TRUE))
+aires_prot$year <- as.numeric(substr(aires_prot$DA_CREATIO, start = 1, stop = 4))
+range(aires_prot$year)
+
 x11()
 plot(st_geometry(aires_prot))
-
+names(aires_prot)
 aires_prot_union <- aires_prot |>
     st_union() |> # st_cast("POLYGON")
     st_as_sf()
@@ -171,4 +177,36 @@ aires_prot_union <- aires_prot |>
 # "/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/aires_protegees_union.gpkg")
 
 aire_prot_union <- st_read("/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/aires_protegees_union.gpkg")
-mapview::mapview(aires_prot_union)
+mapview::mapview(aire_prot_union) + mapview::mapview(salam)
+
+salam <- range_maps[range_maps$NOM_SCIENT == "Desmognathus ochrophaeus", ]
+
+#### Explo data pour la story ####
+# augmentation du niveau de protect pour toute les esp?
+
+spi_ls <- split(SPI, SPI$SPECIES)
+length(spi_ls)
+
+tend <- lapply(spi_ls, function(x) {
+    spe <- unique(x$SPECIES)
+    trend <- x$SPI[nrow(x)] - x$SPI[1]
+
+    data.frame(spe, trend)
+})
+tend_df <- do.call("rbind", tend)
+summary(tend_df$trend)
+
+# especes extremes
+tend_df[tend_df$trend == min(tend_df$trend), ]
+tend_df[tend_df$trend == max(tend_df$trend), ]
+
+# Especes nordiques mieux protegees que especes sudistes
+mean(last_spi$SPI[last_spi$LOC == "South"])
+sd(last_spi$SPI[last_spi$LOC == "South"])
+
+mean(last_spi$SPI[last_spi$LOC == "North"])
+sd(last_spi$SPI[last_spi$LOC == "North"])
+
+# protected areas time serie
+prot_area_ts <- read.csv2("/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/protected_areas_time_series.csv")
+diff(prot_area_ts$area_cum)
