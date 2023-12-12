@@ -28,3 +28,53 @@ cf la Salamandre sombre des montagnes et la Rainette faux grillon
 ## **Représentativité des espèces dans les aires protégées**  
 
 
+# Visualisation  
+
+```{r, include = F}
+# packages
+require(knitr)
+require(mapview)
+require(plotly)
+require(sf)
+require(terra)
+require(htmltools)
+library(viridis)
+
+# Output figure in HTML5
+if (knitr::is_html_output()) {
+    knitr::knit_hooks$set(
+        plot = function(x, options) {
+            cap <- options$fig.cap # figure caption
+            tags <- htmltools::tags
+            as.character(tags$figure(
+                tags$img(src = x, alt = cap),
+                tags$figcaption(cap)
+            ))
+        }
+    )
+}
+```
+
+## Figure 1  
+SPI en fonction du temps avec sp minimale et sp maximale 
+ - recupérer tous les SPI avec code couleur nord/sud  
+ - gam sur les valeurs moyennes
+ - gam sur les deux espèces min et max
+
+## Figure 2
+
+## Figure 3
+
+```{r, echo=F}
+mapview(tabb4[tabb4$dep_year == 2018, ],
+    zcol = "PTT",
+    burst = T,
+    homebutton = F,
+    popup = popupTable(tabb4[tabb4$dep_year == 2018, ],
+        zcol = "popup_info",
+        feature.id = FALSE,
+        row.numbers = FALSE,
+        className = "mapview-popup"
+    )
+)
+```
