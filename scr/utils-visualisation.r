@@ -12,7 +12,7 @@
 
 plot_range_map <- function(range_map, base_map = NULL) {
     # Plot basemap
-    if(!is.null(base_map)) {
+    if (!is.null(base_map)) {
         plot(base_map)
         add <- TRUE
     } else {
@@ -32,16 +32,18 @@ plot_range_map <- function(range_map, base_map = NULL) {
 ###############################################################################
 
 plot_SPI_time_series <- function(...) {
-    SPI <- read.csv("results/SPI.csv")[,-1]
+    SPI <- read.csv("results/SPI.csv")[, -1]
 
     names <- as.character(unique(SPI$SPECIES))
     years <- as.numeric(unique(SPI$YEAR))
 
-    plot(years, SPI$SPI[SPI$SPECIES == names[1]], ylim = c(0,0.7),
-        type='l', col='lightgrey',
-        xlab='Year', ylab='SPI', ...)
+    plot(years, SPI$SPI[SPI$SPECIES == names[1]],
+        ylim = c(0, 0.7),
+        type = "l", col = "lightgrey",
+        xlab = "Year", ylab = "SPI", ...
+    )
     for (i in names[-1]) {
-        lines(years, SPI$SPI[SPI$SPECIES == i], type='l', col='lightgrey')
+        lines(years, SPI$SPI[SPI$SPECIES == i], type = "l", col = "lightgrey")
     }
 
     # Stransform the data to a long format
@@ -53,10 +55,22 @@ plot_SPI_time_series <- function(...) {
 
     # Add a treandline
     ## Mean
-    lines(years, year_mean, type='l', col='black', lwd=2)
+    lines(years, year_mean, type = "l", col = "black", lwd = 2)
     ## Linear regression
-    lm(SPI$SPI ~ SPI$YEAR) |> abline(lwd=2, col='red', lty=2)
+    lm(SPI$SPI ~ SPI$YEAR) |> abline(lwd = 2, col = "red", lty = 2)
+    ## GAM - all data
+    g <- mgcv::gam(SPI ~ s(YEAR, k = 10), data = SPI)
+    newdf <- data.frame(YEAR = years)
+    pred <- mgcv::predict.gam(g, newdf, se.fit = F, type = "response")
+    lines(years, pred, lwd = 2, col = "#00fff7", lty = 1)
 
+    # Add a legend
+    legend("topleft",
+        legend = c("valeurs moyennes", "tendance linéaire", "gam"),
+        col = c("black", "red", "#00fff7"),
+        lty = c(1, 2, 1),
+        bty = "n"
+    )
 }
 
 
@@ -70,28 +84,32 @@ plot_SPI_time_series <- function(...) {
 ###############################################################################
 
 plot_SPI_scores <- function() {
-    SPI <- read.csv("results/SPI.csv")[,-1]
+    SPI <- read.csv("results/SPI.csv")[, -1]
 
     years <- as.numeric(unique(SPI$YEAR)) |> sort()
-    
-    old_par <- par()
-    par(mfrow = c(2,3))
 
-    hist(SPI$SPI, breaks = 20, main = paste("All SPI scores"),
-        xlab = "SPI score", ylab = "Number of species")
+    old_par <- par()
+    par(mfrow = c(2, 3))
+
+    hist(SPI$SPI,
+        breaks = 20, main = paste("All SPI scores"),
+        xlab = "SPI score", ylab = "Number of species"
+    )
 
     for (year in years) {
         breaks <- c("1950", "1980", "1990", "2000", "2010", "2020")
-        if(!(year %in% breaks)) {
+        if (!(year %in% breaks)) {
             next
         } else {
-            hist(SPI$SPI[SPI$YEAR == year], breaks = seq(0,1, by = 0.05), 
+            hist(SPI$SPI[SPI$YEAR == year],
+                breaks = seq(0, 1, by = 0.05),
                 main = paste("SPI scores in", year),
                 xlab = "SPI score", ylab = "Number of species",
-                xlim = c(0, 0.4))
+                xlim = c(0, 0.4)
+            )
         }
-    }   
-    suppressWarnings(par(old_par) )
+    }
+    suppressWarnings(par(old_par))
 }
 
 
@@ -105,14 +123,16 @@ plot_SPI_scores <- function() {
 ###############################################################################
 
 plot_SPI_by_group <- function() {
-    SPI <- read.csv("results/SPI.csv")[,-1]
-    groups <- list(Amphibiens = "data_raw/Aires_repartition_amphibiens.gpkg",
+    SPI <- read.csv("results/SPI.csv")[, -1]
+    groups <- list(
+        Amphibiens = "data_raw/Aires_repartition_amphibiens.gpkg",
         Mammifères_terrestres = "data_raw/Aires_repartition_MT.gpkg",
         Poissons_eau_douce = "data_raw/Aires_repartition_poisson_eau_douce.gpkg",
-        Reptiles = "data_raw/Aires_repartition_reptiles.gpkg")
+        Reptiles = "data_raw/Aires_repartition_reptiles.gpkg"
+    )
 
     old_par <- par()
-    par(mfrow = c(2,3))
+    par(mfrow = c(2, 3))
 
     # Plot all species
     plot_SPI_time_series(main = "All species")
@@ -121,16 +141,18 @@ plot_SPI_by_group <- function() {
     for (i in seq_along(groups)) {
         group_members <- sf::read_sf(groups[i])$NOM_SCIENT
         which_rows <- which(SPI$SPECIES %in% group_members)
-        sub <- SPI[which_rows,] 
+        sub <- SPI[which_rows, ]
         sub_sp <- unique(sub$SPECIES)
 
         # Plot first line
-        plot(sub$YEAR[sub$SPECIES == sub_sp[1]], sub$SPI[sub$SPECIES == sub_sp[1]], ylim = c(0,0.7),
-        type='l', col='lightgrey',
-        xlab='Year', ylab='SPI',
-        main = names(groups)[i])
+        plot(sub$YEAR[sub$SPECIES == sub_sp[1]], sub$SPI[sub$SPECIES == sub_sp[1]],
+            ylim = c(0, 0.7),
+            type = "l", col = "lightgrey",
+            xlab = "Year", ylab = "SPI",
+            main = names(groups)[i]
+        )
         for (sp in sub_sp) {
-            lines(sub$YEAR[sub$SPECIES == sp], sub$SPI[sub$SPECIES == sp], type='l', col='lightgrey')
+            lines(sub$YEAR[sub$SPECIES == sp], sub$SPI[sub$SPECIES == sp], type = "l", col = "lightgrey")
         }
 
         # Add lines for each species
@@ -143,9 +165,9 @@ plot_SPI_by_group <- function() {
 
         # Add a treandline
         ## Mean
-        lines(years, year_mean, type='l', col='black', lwd=2)
+        lines(years, year_mean, type = "l", col = "black", lwd = 2)
         ## Linear regression
-        lm(sub$SPI ~ sub$YEAR) |> abline(lwd=2, col='red', lty=2)
+        lm(sub$SPI ~ sub$YEAR) |> abline(lwd = 2, col = "red", lty = 2)
     }
 
     # Plot protected area
@@ -171,22 +193,24 @@ plot_SPI_at_risk <- function() {
 
     # Read the data
     SPI <- read.csv("results/SPI.csv")
-    rownames(SPI) <- SPI[,1]
-    SPI <- SPI[,-1]
+    rownames(SPI) <- SPI[, 1]
+    SPI <- SPI[, -1]
 
     years <- as.numeric(1992:2017)
     names(SPI) <- years
 
     # Subset the data
     which_rows <- which(rownames(SPI) %in% cdpnq_list)
-    sub <- SPI[which_rows,] 
+    sub <- SPI[which_rows, ]
 
-    plot(years, sub[1,], ylim = c(0,0.2),
-        type='l', col='lightgrey',
-        xlab='Year', ylab='SPI',
-        main = "Species at risk")
+    plot(years, sub[1, ],
+        ylim = c(0, 0.2),
+        type = "l", col = "lightgrey",
+        xlab = "Year", ylab = "SPI",
+        main = "Species at risk"
+    )
     for (i in 2:dim(sub)[1]) {
-            lines(years, sub[i,], type='l', col='lightgrey')
+        lines(years, sub[i, ], type = "l", col = "lightgrey")
     }
 
     # Stransform the data to a long format
@@ -196,9 +220,9 @@ plot_SPI_at_risk <- function() {
 
     # Add a trendline
     ## Mean
-    lines(years, colMeans(sub, na.rm = TRUE), type='l', col='black', lwd=2)
+    lines(years, colMeans(sub, na.rm = TRUE), type = "l", col = "black", lwd = 2)
     ## Linear regression
-    lm(sub_long$SPI ~ sub_long$year) |> abline(lwd=2, col='red', lty=2)
+    lm(sub_long$SPI ~ sub_long$year) |> abline(lwd = 2, col = "red", lty = 2)
 }
 
 
@@ -214,26 +238,29 @@ plot_SPI_at_risk <- function() {
 plot_protected_area <- function() {
     prot_area <- sf::read_sf("data_raw/registre_aires_prot.gpkg")
 
-    time_series <- prot_area[,c("DA_CREATIO", "HA_LEGAL")] |> as.data.frame()
+    time_series <- prot_area[, c("DA_CREATIO", "HA_LEGAL")] |> as.data.frame()
     time_series$annee <- as.numeric(substr(time_series$DA_CREATIO, start = 1, stop = 4))
 
     area <- c()
-    for(i in unique(time_series$annee)) {
+    for (i in unique(time_series$annee)) {
         sum <- sum(time_series$HA_LEGAL[time_series$annee == i])
         area <- c(area, sum)
     }
 
     dat <- data.frame(
         annee = unique(time_series$annee),
-        area = area)
-    
-    dat <- dat[order(dat$annee),]
+        area = area
+    )
+
+    dat <- dat[order(dat$annee), ]
     dat$area_cum <- cumsum(area)
     names(dat) <- c("annee", "area", "area_cum")
-    
 
-    plot(dat$annee, dat$area_cum, col = "black",
-        xlab = "Year", ylab = "Area (Ha)", main = "Protected area in Quebec")
+
+    plot(dat$annee, dat$area_cum,
+        col = "black",
+        xlab = "Year", ylab = "Area (Ha)", main = "Protected area in Quebec"
+    )
 }
 
 
@@ -249,19 +276,30 @@ plot_protected_area <- function() {
 # Date: 2023-08-24
 ###############################################################################
 plot_SPI_regions <- function(SPI, ...) {
-
     aires_prot <- suppressWarnings(st_read("data_raw/registre_aires_prot.gpkg", layer = "AP_REG_S", quiet = TRUE))
     range_maps <- st_read("data_clean/aires_repartition.gpkg", quiet = TRUE)
-    SPI <- read.csv("results/SPI.csv")[,-1]
+    SPI <- read.csv("results/SPI.csv")[, -1]
 
     # Which areas are in the north and south of the country?
     # We use the latitude of the center of the area to determine this. Then convert to degrees
-    st_centroid(range_maps[1,]) |> st_coordinates() 
-    centroid <- range_maps |> st_transform(4326) |> st_make_valid() |> st_centroid() |> st_coordinates() 
-    southern_range <- which(centroid[,2] <= 50)
-    southern_sp <- range_maps[southern_range,] |> st_drop_geometry() |> dplyr::select(NOM_SCIENT) |> unique() |> unlist()
-    northern_range <- which(centroid[,2] > 50)
-    northern_sp <- range_maps[northern_range,] |> st_drop_geometry() |> dplyr::select(NOM_SCIENT) |> unique() |> unlist()
+    st_centroid(range_maps[1, ]) |> st_coordinates()
+    centroid <- range_maps |>
+        st_transform(4326) |>
+        st_make_valid() |>
+        st_centroid() |>
+        st_coordinates()
+    southern_range <- which(centroid[, 2] <= 50)
+    southern_sp <- range_maps[southern_range, ] |>
+        st_drop_geometry() |>
+        dplyr::select(NOM_SCIENT) |>
+        unique() |>
+        unlist()
+    northern_range <- which(centroid[, 2] > 50)
+    northern_sp <- range_maps[northern_range, ] |>
+        st_drop_geometry() |>
+        dplyr::select(NOM_SCIENT) |>
+        unique() |>
+        unlist()
     # Isolate the two first characters of the LATDMS column
     southern_aires <- which(substr(aires_prot$LATDMS, 1, 2) <= 50)
     northern_aires <- which(substr(aires_prot$LATDMS, 1, 2) > 50)
@@ -269,11 +307,13 @@ plot_SPI_regions <- function(SPI, ...) {
     names <- as.character(unique(SPI$SPECIES))
     years <- as.numeric(unique(SPI$YEAR)) |> sort()
 
-    plot(SPI$YEAR[SPI$SPECIES == names[1]], SPI$SPI[SPI$SPECIES == names[1]], ylim = c(0,0.7),
-        type='l', col='lightgrey',
-        xlab='Year', ylab='SPI', ...)
+    plot(SPI$YEAR[SPI$SPECIES == names[1]], SPI$SPI[SPI$SPECIES == names[1]],
+        ylim = c(0, 0.7),
+        type = "l", col = "lightgrey",
+        xlab = "Year", ylab = "SPI", ...
+    )
     for (i in names[-1]) {
-        lines(SPI$YEAR[SPI$SPECIES == i], SPI$SPI[SPI$SPECIES == i], type='l', col='lightgrey')
+        lines(SPI$YEAR[SPI$SPECIES == i], SPI$SPI[SPI$SPECIES == i], type = "l", col = "lightgrey")
     }
 
     # Transform the data to a long format
@@ -285,7 +325,7 @@ plot_SPI_regions <- function(SPI, ...) {
 
     # Add a treandline
     ## Mean
-    lines(years, year_mean, type='l', col='black', lwd=2)
+    lines(years, year_mean, type = "l", col = "black", lwd = 2)
     ## Linear regression
-    lm(SPI$SPI ~ SPI$YEAR) |> abline(lwd=2, col='red', lty=2)
+    lm(SPI$SPI ~ SPI$YEAR) |> abline(lwd = 2, col = "red", lty = 2)
 }
