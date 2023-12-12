@@ -1,14 +1,30 @@
-## Points clé
+---
+title: "Indicateur de protection des espèces"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+    toc_float: true
+---
+# Points clé
 
-**Augmentation de la protection de toutes les espèces ciblées au cours des 61 dernières années**  
+## **Augmentation de la protection de toutes les espèces ciblées au cours des 61 dernières années**  
 Augmentation minimale de 1% pour la Salamande sombre des montagnes (*Desmognathus ochrophaeus*)  
 Augmentation maximale de 70% pour la Rainette faux grillon (*Pseudacris maculata*)  
 Avec une moyenne de 11% pour les xxx espèces considérées  
 À mettre en lien avec le seuil Aichi de 17%  
 
-**Etat de la protection des espèces du nord vs. du Sud**  
+## **Etat de la protection des espèces du nord vs. du Sud**  
 *Une espèce est considérée du nord si la latitude du centroïde de son aire de répartition est supérieure à 55°. Inversement, une espèce dont la latitude du centroïde de son aire de répartition est inférieure ou égale à cette valeur seuil, sera considérée comme une espèce du sud.*  
 Les espèces du Nord présentent un SPI moyen de 17% (sd = 4%).  
 Les espèces du Sud présentent un SPI moyen 9% (sd = 8%).  
+
+## **Moments marquants de la création des aires protégées**  
+Farfouiller autour des années 1981 et 2003 qui correspondent à une augmentation importante de la superficie des aires protégées.  
+
+## **Identification d'espèces extrêmes en terme de protection**  
+cf la Salamandre sombre des montagnes et la Rainette faux grillon
+
+## **Représentativité des espèces dans les aires protégées**  
 
 
