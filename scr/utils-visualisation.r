@@ -37,11 +37,13 @@ plot_SPI_time_series <- function(...) {
     names <- as.character(unique(SPI$SPECIES))
     years <- as.numeric(unique(SPI$YEAR))
 
-    plot(years, SPI$SPI[SPI$SPECIES == names[1]], ylim = c(0,0.7),
+    plot(years, SPI$SPI[SPI$SPECIES == names[1]], 
+        ylim = c(0,1), xlim = c(1880, 2025),
         type='l', col='lightgrey',
         xlab='Year', ylab='SPI', ...)
     for (i in names[-1]) {
         lines(years, SPI$SPI[SPI$SPECIES == i], type='l', col='lightgrey')
+        # Sys.sleep(0.1)
     }
 
     # Stransform the data to a long format
@@ -118,15 +120,16 @@ plot_SPI_by_group <- function() {
 
     # Plot species by group
     for (i in seq_along(groups)) {
-        which_rows <- which(occurences$GGROUPE == groups[i])
-        sub <- SPI[which_rows,] 
+        which_sp <- occurences$SNAME[occurences$GGROUPE == groups[i]] |> unique()
+        sub <- SPI[SPI$SPECIES %in% which_sp,] 
         sub_sp <- unique(sub$SPECIES)
 
         # Plot first line
-        plot(sub$YEAR[sub$SPECIES == sub_sp[1]], sub$SPI[sub$SPECIES == sub_sp[1]], ylim = c(0,1),
-        type='l', col='lightgrey',
-        xlab='Year', ylab='SPI',
-        main = groups[i])
+        plot(sub$YEAR[sub$SPECIES == sub_sp[1]], sub$SPI[sub$SPECIES == sub_sp[1]],
+            ylim = c(0,1), xlim = c(1880, 2025),
+            type='l', col='lightgrey',
+            xlab='Year', ylab='SPI',
+            main = groups[i])
         for (sp in sub_sp) {
             lines(sub$YEAR[sub$SPECIES == sp], sub$SPI[sub$SPECIES == sp], type='l', col='lightgrey')
         }
