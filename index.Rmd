@@ -40,19 +40,27 @@ require(terra)
 require(htmltools)
 library(viridis)
 
+# data
+SPI <- read.csv("results/SPI.csv")[, -1]
+names <- as.character(unique(SPI$SPECIES))
+years <- as.numeric(unique(SPI$YEAR))
+
+# ---
+last_spi <- read.csv2("/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/SPI_north_south.csv")
+
 # Output figure in HTML5
-if (knitr::is_html_output()) {
-    knitr::knit_hooks$set(
-        plot = function(x, options) {
-            cap <- options$fig.cap # figure caption
-            tags <- htmltools::tags
-            as.character(tags$figure(
-                tags$img(src = x, alt = cap),
-                tags$figcaption(cap)
-            ))
-        }
-    )
-}
+# if (knitr::is_html_output()) {
+#     knitr::knit_hooks$set(
+#         plot = function(x, options) {
+#             cap <- options$fig.cap # figure caption
+#             tags <- htmltools::tags
+#             as.character(tags$figure(
+#                 tags$img(src = x, alt = cap),
+#                 tags$figcaption(cap)
+#             ))
+#         }
+#     )
+# }
 ```
 
 ## Figure 1  
@@ -62,19 +70,54 @@ SPI en fonction du temps avec sp minimale et sp maximale
  - gam sur les deux espèces min et max
 
 ## Figure 2
+```{r, echo=F, warning = FALSE}
+# color definition
+# viridis_pal <- viridisLite::viridis(20)
+# scales::show_col(viridis_pal)
+# pal <- c(viridis_pal[11], "#DCE318FF")
+# pal2 <- setNames(pal, c("North", "South"))
+# colors <- ifelse(last_spi$LOC == "North", viridis_pal[11], "#DCE318FF")
 
+# conversion from species characters to ordered levels of factor for keeping increasing SPI
+last_spi$SPECIES2 <- factor(last_spi$SPECIES, levels = last_spi$SPECIES[order(last_spi$SPI, decreasing = FALSE)])
+
+# fonction for drawing a vertical line
+vline <- function(x = 0, color = "green") {
+    list(
+        type = "line",
+        y0 = 0,
+        y1 = 1,
+        yref = "paper",
+        x0 = x,
+        x1 = x,
+        line = list(color = color, dash = "dot")
+    )
+}
+
+fig <- plot_ly() |>
+    add_bars(
+        data = last_spi,
+        x = ~SPI,
+        y = ~SPECIES2,
+        type = "bar",
+        orientation = "h",
+        color = ~LOC,
+        # colors = pal2,
+        hovertemplate = paste(
+            "<b>%{y}</b><br>",
+            "<b>SPI</b> = %{x}"
+        )
+    ) |>
+    layout(
+        yaxis = list(zeroline = FALSE, title = "Espèce", showticklabels = FALSE),
+        xaxis = list(zeroline = FALSE),
+        shapes = list(vline(0.17, color = "black"))
+    )
+# print(fig)
+fig
+```
 ## Figure 3
 
 ```{r, echo=F}
-mapview(tabb4[tabb4$dep_year == 2018, ],
-    zcol = "PTT",
-    burst = T,
-    homebutton = F,
-    popup = popupTable(tabb4[tabb4$dep_year == 2018, ],
-        zcol = "popup_info",
-        feature.id = FALSE,
-        row.numbers = FALSE,
-        className = "mapview-popup"
-    )
-)
+
 ```
