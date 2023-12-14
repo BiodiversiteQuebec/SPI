@@ -4,6 +4,7 @@ library(mgcv)
 library(dplyr)
 library(plotrix)
 library(sf)
+library(smoothr)
 
 ## Data
 
@@ -20,13 +21,18 @@ years <- as.numeric(unique(SPI$YEAR))
 
 plot(years, SPI$SPI[SPI$SPECIES == names[1]],
     ylim = c(0, 0.7),
-    type = "l", col = "lightgrey",
-    xlab = "Year", ylab = "SPI", ...
+    type = "l", col = "white",
+    xlab = "Year", ylab = "SPI"
 )
-for (i in names[-1]) {
-    lines(years, SPI$SPI[SPI$SPECIES == i], type = "l", col = "lightgrey")
-}
+# for (i in names[-1]) {
+#     lines(years, SPI$SPI[SPI$SPECIES == i], type = "l", col = "lightgrey")
+# }
 
+for (i in names[-1]) {
+    m <- cbind(SPI$YEAR[SPI$SPECIES == i], SPI$SPI[SPI$SPECIES == i])
+    sm <- smooth_ksmooth(m, smoothness = 4)
+    lines(sm[, 1], sm[, 2], col = "lightgrey")
+}
 # mean SPI
 # --------
 year_mean <- c()
@@ -35,10 +41,16 @@ for (i in years) {
     year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
 }
 
+# smooth mean values
+# ------------------
+mm <- cbind(years, year_mean)
+s_mm <- smooth_ksmooth(mm, smoothness = 4)
+lines(s_mm[, 1], s_mm[, 2], col = "#55C667FF", lwd = 3)
+
 # gam on mean values
 # ------------------
-g_mean <- mgcv::gam(year_mean ~ s(years, k = 10))
-pred_mean <- mgcv::predict.gam(g_mean, se.fit = F, type = "response")
+# g_mean <- mgcv::gam(year_mean ~ s(years, k = 10))
+# pred_mean <- mgcv::predict.gam(g_mean, se.fit = F, type = "response")
 
 # looking for min and max species
 # -------------------------------
@@ -55,15 +67,24 @@ synth[synth$sum == max(synth$sum) | synth$sum == min(synth$sum), ]
 df_max <- SPI[SPI$SPECIES == "Pseudacris maculata", ]
 df_min <- SPI[SPI$SPECIES == "Desmognathus ochrophaeus", ]
 
-g_max <- gam(SPI ~ s(YEAR, k = 5), data = df_max, family = "quasibinomial")
-pred_max <- predict.gam(g_max, type = "response", se.fit = F)
+# g_max <- gam(SPI ~ s(YEAR), data = df_max, family = "quasibinomial")
+# pred_max <- predict.gam(g_max, type = "response", se.fit = F)
 
-g_min <- gam(SPI ~ s(YEAR, k = 4), data = df_min, family = "quasibinomial")
-pred_min <- predict.gam(g_min, type = "response", se.fit = F)
+# g_min <- gam(SPI ~ s(YEAR, k = 4), data = df_min, family = "quasibinomial")
+# pred_min <- predict.gam(g_min, type = "response", se.fit = F)
+
+# smooth min & max values
+# -----------------------
+s_max <- smooth_ksmooth(as.matrix(df_max[, c(3, 2)]), smoothness = 4)
+s_min <- smooth_ksmooth(as.matrix(df_min[, c(3, 2)]), smoothness = 4)
+
+lines(s_min[, 1], s_min[, 2], col = "black", lwd = 3)
+lines(s_max[, 1], s_max[, 2], col = "black", lwd = 3)
 
 # figure production
 # -----------------
 
+# with gam values
 # define the gap for the y axis
 from <- 0.2
 to <- 0.5
@@ -93,6 +114,22 @@ lines(years,
     col = "#0b9241"
 )
 
+# with smoothed values
+plot(years, SPI$SPI[SPI$SPECIES == names[1]],
+    ylim = c(0, 0.7),
+    type = "l", col = "white",
+    xlab = "Year", ylab = "SPI",
+    bty = "n"
+)
+for (i in names[-1]) {
+    m <- cbind(SPI$YEAR[SPI$SPECIES == i], SPI$SPI[SPI$SPECIES == i])
+    sm <- smooth_ksmooth(m, smoothness = 4)
+    lines(sm[, 1], sm[, 2], col = "lightgrey")
+}
+lines(s_mm[, 1], s_mm[, 2], col = "#238A8DFF", lwd = 3)
+lines(s_min[, 1], s_min[, 2], col = "#238A8DFF", lwd = 2, lty = 2)
+lines(s_max[, 1], s_max[, 2], col = "#238A8DFF", lwd = 2, lty = 2)
+
 #### Figure 2 ####
 # --> barplot of ordered SPI
 
@@ -112,11 +149,11 @@ SPI <- read.csv("results/SPI.csv")[, -1]
 
 # for segregation btw North and South
 # We use the latitude of the center of the area to determine this. Then convert to degrees and compare with lat 50 (aprox of tree line)
-# centroid <- range_maps |>
-#     st_transform(4326) |>
-#     st_make_valid() |>
-#     st_centroid() |>
-#     st_coordinates() # long !!!!
+centroid <- range_maps |>
+    st_transform(4326) |>
+    st_make_valid() |>
+    st_centroid() |>
+    st_coordinates() # long !!!!
 
 southern_sp <- range_maps[which(centroid[, 2] <= 50), ] |>
     st_drop_geometry() |>

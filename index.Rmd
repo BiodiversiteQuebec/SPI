@@ -39,13 +39,32 @@ require(sf)
 require(terra)
 require(htmltools)
 library(viridis)
+library(smoothr)
 
-# data
+# raw data
 aire_prot_union <- st_read("/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/aires_protegees_union.gpkg")
 SPI <- read.csv("results/SPI.csv")[, -1]
 names <- as.character(unique(SPI$SPECIES))
 years <- as.numeric(unique(SPI$YEAR))
 
+# produced data
+# ---
+
+all_sm <- data.frame()
+for (i in names) {
+    m <- cbind(SPI$YEAR[SPI$SPECIES == i], SPI$SPI[SPI$SPECIES == i])
+    sm <- smooth_ksmooth(m, smoothness = 4)
+    df <- as.data.frame(sm)
+    names(df) <- c("YEAR", "SPI")
+    df$SPECIES <- i
+    df$YEAR2 <- ceiling(df$YEAR)
+    all_sm <- rbind(all_sm, df)
+}
+
+df_max <- SPI[SPI$SPECIES == "Pseudacris maculata", ]
+df_min <- SPI[SPI$SPECIES == "Desmognathus ochrophaeus", ]
+s_max <- smooth_ksmooth(as.matrix(df_max[, c(3, 2)]), smoothness = 4)
+s_min <- smooth_ksmooth(as.matrix(df_min[, c(3, 2)]), smoothness = 4)
 # ---
 last_spi <- read.csv2("/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/SPI_north_south.csv")
 
@@ -71,7 +90,25 @@ SPI en fonction du temps avec sp minimale et sp maximale
  - gam sur les deux espèces min et max
 
 ```{r}
+g <- plot_ly() |> add_lines(x = ceiling(s_max[, 1]), y = s_max[, 2], color = I("#238A8DFF"))
 
+for (i in names) {
+    sm <- all_sm[all_sm$SPECIES == i, ]
+    g <- add_lines(g,
+        x = sm$YEAR,
+        y = sm$SPI,
+        color = I("lightgrey"),
+        text = i
+    )
+}
+g <- add_lines(g, x = ceiling(s_mm[, 1]), y = s_mm[, 2], color = I("#238A8DFF"))
+g <- add_lines(g, x = ceiling(s_min[, 1]), y = s_min[, 2], color = I("#B8DE29FF"))
+g <- add_lines(g, x = ceiling(s_max[, 1]), y = s_max[, 2], color = I("#404788FF"))
+g |> layout(
+    showlegend = F,
+    yaxis = list(zeroline = FALSE, title = "SPI"),
+    xaxis = list(zeroline = FALSE, title = "Année")
+)
 ```
 
 ## Figure 2
@@ -87,7 +124,7 @@ SPI en fonction du temps avec sp minimale et sp maximale
 last_spi$SPECIES2 <- factor(last_spi$SPECIES, levels = last_spi$SPECIES[order(last_spi$SPI, decreasing = FALSE)])
 
 # fonction for drawing a vertical line
-vline <- function(x = 0, color = "green") {
+vline <- function(x = 0, color = "#238A8DFF") {
     list(
         type = "line",
         y0 = 0,
@@ -124,5 +161,5 @@ fig
 ## Figure 3
 
 ```{r, echo=F}
-mapview(aire_prot_union)
+mapview(aire_prot_union, col.regions = "#238A8DFF")
 ```
