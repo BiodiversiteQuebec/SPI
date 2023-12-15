@@ -32,14 +32,14 @@ cf la Salamandre sombre des montagnes et la Rainette faux grillon
 
 ```{r, include = F}
 # packages
-require(knitr)
-require(mapview)
-require(plotly)
-require(sf)
-require(terra)
-require(htmltools)
-require(viridis)
-require(smoothr)
+library(knitr)
+library(mapview)
+library(plotly)
+library(sf)
+library(terra)
+library(htmltools)
+library(viridis)
+library(smoothr)
 
 # raw data
 aire_prot_union <- st_read("/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/aires_protegees_union.gpkg")
