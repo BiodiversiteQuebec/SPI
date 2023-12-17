@@ -34,9 +34,19 @@ jobs:
         with:
           path: index.qmd
 
-      - name: Publish to GitHub Pages (and render)
-        uses: quarto-dev/quarto-actions/publish@v2
+      - name: prepare deployment
+        run: |
+          mkdir docs
+          mv index.html docs/
+          if [ -d index_files ]; then
+            mv index_files docs/
+          fi
+          touch docs/.nojekyll
+
+      - name: Deploy gh_pages
+        uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
-          target: gh-pages
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: docs
+          SINGLE_COMMIT: true
