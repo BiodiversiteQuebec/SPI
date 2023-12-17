@@ -45,9 +45,11 @@ jobs:
           sudo apt-get install libudunits2-dev
           sudo apt-get install gdal-bin
           sudo apt-get install libgdal-dev
-      - name: Install R dependencies
-        run: Rscript -e "install.packages(c('rmarkdown', 'pagedown', 'knitr', 'mapview', 'plotly', 'sf', 'terra', 'htmltools', 'viridis', 'smoothr'))"
-
+          
+      - uses: r-lib/actions/setup-renv@v2
+        with:
+          cache-version: 1
+          
       - name: Build html
         run: Rscript -e "rmarkdown::render('index.Rmd')"
 
