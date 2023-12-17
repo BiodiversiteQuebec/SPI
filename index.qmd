@@ -62,7 +62,9 @@ for (i in names) {
     df <- as.data.frame(sm)
     names(df) <- c("YEAR", "SPI")
     df$SPECIES <- i
-    df$YEAR2 <- ceiling(df$YEAR)
+    df$YEAR2 <- floor(df$YEAR)
+    df$SPI2 <- round(df$SPI, digits = 3)
+    df$INFOS <- paste0("<b>", df$SPECIES, "</b><br>Année <b>", df$YEAR2, "</b><br>SPI = <b>", df$SPI2, "</b>")
     all_sm <- rbind(all_sm, df)
 }
 
@@ -78,11 +80,41 @@ for (i in years) {
 # ------------------
 mm <- cbind(years, year_mean)
 s_mm <- smooth_ksmooth(mm, smoothness = 4)
-
 df_max <- SPI[SPI$SPECIES == "Pseudacris maculata", ]
 df_min <- SPI[SPI$SPECIES == "Desmognathus ochrophaeus", ]
 s_max <- smooth_ksmooth(as.matrix(df_max[, c(3, 2)]), smoothness = 4)
 s_min <- smooth_ksmooth(as.matrix(df_min[, c(3, 2)]), smoothness = 4)
+
+s_range <- list(s_mm, s_max, s_min)
+names(s_range) <- c("s_mm", "s_max", "s_min")
+
+s_range <- lapply(s_range, function(x){
+    df <- as.data.frame(x)
+    names(df) <- c("YEAR_PRED", "SPI")
+    df$SPI2 <- round(df$SPI, digits = 3)
+    df$YEAR2 <- floor(df$YEAR)
+    df
+})
+
+s_mm <- s_range[["s_mm"]]
+s_mm$SP <- "Valeur moyenne"
+s_max <- s_range[["s_max"]]
+s_max$SP <- "Pseudacris maculata"
+s_min <- s_range[["s_min"]]
+s_min$SP <- "Desmognathus ochrophaeus"
+
+sm_ls <- list(s_mm, s_min, s_max)
+names(sm_ls) <- c("s_mm", "s_min", "s_max")
+
+sm_ls <- lapply(sm_ls, function(x){
+    x$INFOS <- paste0("<b>", x$SP, "</b><br>Année <b>", x$YEAR2, "</b><br>SPI = <b>", x$SPI2, "</b>")
+    x
+})
+
+s_mm <- sm_ls[[1]]
+s_min <- sm_ls[[2]]
+s_max <- sm_ls[[3]]
+
 # ---
 last_spi <- read.csv2("data_clean/SPI_north_south.csv")
 
@@ -108,20 +140,30 @@ SPI en fonction du temps avec sp minimale et sp maximale
  - gam sur les deux espèces min et max
 
 ```{r}
-g <- plot_ly() |> add_lines(x = s_mm[, 1], y = s_mm[, 2], color = I("#238A8DFF"))
+g <- plot_ly() |> add_lines(x = s_mm$YEAR_PRED,
+                            y = s_mm$SPI,
+                            color = I("#238A8DFF"),
+                            text = s_mm$INFOS,
+                            hoverinfo = "text"
+                            # hovertemplate = paste(
+                            #     "<b>Valeur moyenne</b><br>",
+                            #     "<b>SPI</b> = %{y}"
+        # )
+        )
 
-for (i in names) {
-    sm <- all_sm[all_sm$SPECIES == i, ]
-    g <- add_lines(g,
-        x = sm$YEAR,
-        y = sm$SPI,
-        color = I("lightgrey"),
-        text = i
-    )
-}
-g <- add_lines(g, x = s_mm[, 1], y = s_mm[, 2], color = I("#238A8DFF"))
-g <- add_lines(g, x = s_min[, 1], y = s_min[, 2], color = I("#B8DE29FF"))
-g <- add_lines(g, x = s_max[, 1], y = s_max[, 2], color = I("#404788FF"))
+# for (i in names) {
+#     sm <- all_sm[all_sm$SPECIES == i, ]
+#     g <- add_lines(g,
+#         x = sm$YEAR,
+#         y = sm$SPI,
+#         color = I("lightgrey"),
+#         text = sm$INFOS,
+#         hoverinfo = "text"
+#     )
+# }
+g <- add_lines(g, x = s_mm$YEAR_PRED, y = s_mm$SPI, color = I("#238A8DFF"), text = s_mm$INFOS, hoverinfo = "text")
+g <- add_lines(g, x = s_min$YEAR_PRED, y = s_min$SPI, color = I("#B8DE29FF"), text = s_min$INFOS, hoverinfo = "text")
+g <- add_lines(g, x = s_max$YEAR_PRED, y = s_max$SPI, color = I("#404788FF"), text = s_max$INFOS, hoverinfo = "text")
 g |> layout(
     showlegend = F,
     yaxis = list(zeroline = FALSE, title = "SPI"),

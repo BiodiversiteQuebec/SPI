@@ -5,3 +5,5 @@ data_raw/*
 
 *.html
 index_files
+
+.vscode
