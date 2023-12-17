@@ -39,5 +39,6 @@ jobs:
         with:
           target: gh-pages
           SINGLE_COMMIT: true
+          path: index.html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
