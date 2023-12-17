@@ -38,7 +38,5 @@ jobs:
         uses: quarto-dev/quarto-actions/publish@v2
         with:
           target: gh-pages
-          SINGLE_COMMIT: true
-          path: index.html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
