@@ -42,7 +42,7 @@ library(viridis)
 library(smoothr)
 
 # raw data
-aire_prot_union <- st_read("/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/aires_protegees_union.gpkg")
+aire_prot_union <- st_read("data_clean/aires_protegees_union.gpkg")
 SPI <- read.csv("results/SPI.csv")[, -1]
 names <- as.character(unique(SPI$SPECIES))
 years <- as.numeric(unique(SPI$YEAR))
