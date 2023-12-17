@@ -8,29 +8,6 @@ format:
     code-tools: true
     source: repo
 ---
-
-# Points clé
-
-## **Augmentation de la protection de toutes les espèces ciblées au cours des 61 dernières années**  
-Augmentation minimale de 1% pour la Salamande sombre des montagnes (*Desmognathus ochrophaeus*)  
-Augmentation maximale de 70% pour la Rainette faux grillon (*Pseudacris maculata*)  
-Avec une moyenne de 11% pour les 225 espèces considérées  
-À mettre en lien avec le seuil Aichi de 17% et/ou les cibles du cadre mondial de la biodiversité 
-
-## **Etat de la protection des espèces du nord vs. du Sud**  
-*Une espèce est considérée du nord si la latitude du centroïde de son aire de répartition est supérieure à 55°. Inversement, une espèce dont la latitude du centroïde de son aire de répartition est inférieure ou égale à cette valeur seuil, sera considérée comme une espèce du sud.*  
-Les espèces du Nord présentent un SPI moyen de 17% (sd = 4%).  
-Les espèces du Sud présentent un SPI moyen 9% (sd = 8%).  
-
-## **Moments marquants de la création des aires protégées**  
-Regarder autour des années 1981 et 2003 qui correspondent à une augmentation importante de la superficie des aires protégées.  
-
-## **Identification d'espèces extrêmes en terme de protection**  
-cf la Salamandre sombre des montagnes et la Rainette faux grillon
-
-
-# Visualisation  
-
 ```{r, include = F}
 # packages
 library(knitr)
@@ -131,7 +108,22 @@ last_spi <- read.csv2("data_clean/SPI_north_south.csv")
 # }
 ```
 
-## Figure 1  
+# Points clé
+
+## **Représentation actuelle des aires protégées du Québec**
+
+```{r, echo=F}
+#| label: fig-aires_prot
+#| fig-cap: "Carte des aires protégées actuelles."
+#| warning: false
+mapview(aire2, col.regions = "#238A8DFF", popup = F, legend = F)
+```
+
+## **Augmentation de la protection de toutes les espèces ciblées au cours des 61 dernières années**  
+Augmentation minimale de 1% pour la Salamande sombre des montagnes (*Desmognathus ochrophaeus*)  
+Augmentation maximale de 70% pour la Rainette faux grillon (*Pseudacris maculata*)  
+Avec une moyenne de 11% pour les 225 espèces considérées  
+À mettre en lien avec le seuil Aichi de 17% et/ou les cibles du cadre mondial de la biodiversité 
 
 ```{r, echo=F, warnings=F}
 #| label: fig-spi_trend
@@ -165,7 +157,14 @@ g |> layout(
 )
 ```
 
-## Figure 2
+## **Moments marquants de la création des aires protégées**  
+Regarder autour des années 1981 et 2003 qui correspondent à une augmentation importante de la superficie des aires protégées.  
+
+## **Etat de la protection des espèces du nord vs. du Sud**  
+*Une espèce est considérée du nord si la latitude du centroïde de son aire de répartition est supérieure à 55°. Inversement, une espèce dont la latitude du centroïde de son aire de répartition est inférieure ou égale à cette valeur seuil, sera considérée comme une espèce du sud.*  
+Les espèces du Nord présentent un SPI moyen de 17% (sd = 4%).  
+Les espèces du Sud présentent un SPI moyen 9% (sd = 8%).  
+
 ```{r, echo=F, warning = FALSE}
 #| label: fig-spi_2023
 #| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023."
@@ -209,11 +208,8 @@ fig <- plot_ly() |>
 # print(fig)
 fig
 ```
-## Figure 3
 
-```{r, echo=F}
-#| label: fig-aires_prot
-#| fig-cap: "Carte des aires protégées actuelles."
-#| warning: false
-mapview(aire2, col.regions = "#238A8DFF", popup = F, legend = F)
-```
+
+## **Identification d'espèces extrêmes en terme de protection**  
+cf la Salamandre sombre des montagnes et la Rainette faux grillon
+
