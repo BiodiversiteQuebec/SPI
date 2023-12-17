@@ -1,5 +1,5 @@
 ---
-title: "My document"
+title: "Indicateur de protection des espèces"
 format:
   html:
     theme: flatly
@@ -134,33 +134,29 @@ last_spi <- read.csv2("data_clean/SPI_north_south.csv")
 ```
 
 ## Figure 1  
-SPI en fonction du temps avec sp minimale et sp maximale 
- - recupérer tous les SPI avec code couleur nord/sud  
- - gam sur les valeurs moyennes
- - gam sur les deux espèces min et max
 
-```{r}
+```{r, echo=F, warnings=F}
+#| label: fig-spi_trend
+#| fig-cap: "Valeur moyenne et par espèce de l'indice de protection des espèces. La courbe bleue représente le SPI moyen, les courbes verte et pourpre représentent les espèces la moins et la plus protégée, respectivement."
+#| warning: false
+
 g <- plot_ly() |> add_lines(x = s_mm$YEAR_PRED,
                             y = s_mm$SPI,
                             color = I("#238A8DFF"),
                             text = s_mm$INFOS,
                             hoverinfo = "text"
-                            # hovertemplate = paste(
-                            #     "<b>Valeur moyenne</b><br>",
-                            #     "<b>SPI</b> = %{y}"
-        # )
         )
 
-# for (i in names) {
-#     sm <- all_sm[all_sm$SPECIES == i, ]
-#     g <- add_lines(g,
-#         x = sm$YEAR,
-#         y = sm$SPI,
-#         color = I("lightgrey"),
-#         text = sm$INFOS,
-#         hoverinfo = "text"
-#     )
-# }
+for (i in names) {
+    sm <- all_sm[all_sm$SPECIES == i, ]
+    g <- add_lines(g,
+        x = sm$YEAR,
+        y = sm$SPI,
+        color = I("lightgrey"),
+        text = sm$INFOS,
+        hoverinfo = "text"
+    )
+}
 g <- add_lines(g, x = s_mm$YEAR_PRED, y = s_mm$SPI, color = I("#238A8DFF"), text = s_mm$INFOS, hoverinfo = "text")
 g <- add_lines(g, x = s_min$YEAR_PRED, y = s_min$SPI, color = I("#B8DE29FF"), text = s_min$INFOS, hoverinfo = "text")
 g <- add_lines(g, x = s_max$YEAR_PRED, y = s_max$SPI, color = I("#404788FF"), text = s_max$INFOS, hoverinfo = "text")
@@ -173,12 +169,9 @@ g |> layout(
 
 ## Figure 2
 ```{r, echo=F, warning = FALSE}
-# color definition
-# viridis_pal <- viridisLite::viridis(20)
-# scales::show_col(viridis_pal)
-# pal <- c(viridis_pal[11], "#DCE318FF")
-# pal2 <- setNames(pal, c("North", "South"))
-# colors <- ifelse(last_spi$LOC == "North", viridis_pal[11], "#DCE318FF")
+#| label: fig-spi_2023
+#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023."
+#| warning: false
 
 # conversion from species characters to ordered levels of factor for keeping increasing SPI
 last_spi$SPECIES2 <- factor(last_spi$SPECIES, levels = last_spi$SPECIES[order(last_spi$SPI, decreasing = FALSE)])
@@ -221,5 +214,8 @@ fig
 ## Figure 3
 
 ```{r, echo=F}
-mapview(aire2, col.regions = "#238A8DFF")
+#| label: fig-aires_prot
+#| fig-cap: "Carte des aires protégées actuelles."
+#| warning: false
+mapview(aire2, col.regions = "#238A8DFF", popup = F, legend = F)
 ```
