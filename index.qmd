@@ -1,6 +1,12 @@
 ---
-title: "Untitled"
-format: html
+title: "My document"
+format:
+  html:
+    theme: flatly
+    toc: true
+    code-fold: show
+    code-tools: true
+    source: repo
 ---
 
 # Points clé

@@ -1,9 +1,0 @@
-# fichier de configuration pour le format du fichier quarto
-title: "My document"
-format:
-  html:
-    theme: flatly
-    toc: true
-    code-fold: show
-    code-tools: true
-    source: repo
