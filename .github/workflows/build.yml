@@ -34,10 +34,10 @@ jobs:
         with:
           path: index.qmd
 
-      - name: Deploy gh_pages
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+      - name: Publish to GitHub Pages (and render)
+        uses: quarto-dev/quarto-actions/publish@v2
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: index.html
+          target: gh-pages
           SINGLE_COMMIT: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
