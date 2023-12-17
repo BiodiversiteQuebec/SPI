@@ -1,2 +1,7 @@
 data_clean/aires_repartition.gpkg
 data_raw/*
+
+/.quarto/
+
+*.html
+index_files

@@ -1,71 +1,43 @@
-name: Build and deploy
+name: Build report
 
 on:
-    push:
-        branches:
-        - bdqc_2023
+  push:
+    branches:
+      - bdqc_2023
 
 jobs:
-  Build_deploy:
+  build_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - uses: r-lib/actions/setup-pandoc@v2
-        with:
-          pandoc-version: '2.7.3'
-      - uses: r-lib/actions/setup-r@v2
-        with:
-            r-version: '4.1.0'
+      - name: Check out repository
+        uses: actions/checkout@v3
 
-      - name: Python 3.6
-        uses: actions/setup-python@v1
+      - name: Install quarto
+        uses: quarto-dev/quarto-actions/setup@v2
         with:
-          python-version: '3.10'
+          tinytex: true
 
-      - name: Install pandoc filters
-        run: |
-          python -m pip install --upgrade pip
-          pip install pandoc-fignos pandoc-eqnos pandoc-tablenos pandoc-secnos pandoc-xnos
-          which pandoc pandoc-fignos pandoc-eqnos pandoc-tablenos pandoc-secnos pandoc-xnos
-      - name: Install LaTeX
-        run: |
-          sudo apt-get install texlive-latex-base
-          sudo apt-get install texlive-fonts-recommended
-          sudo apt-get install texlive-fonts-extra
-          sudo apt-get install texlive-latex-extra
-      - name: Install system dependencies
-        if: runner.os == 'Linux'
-        env:
-          RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
-        run: |
-          sudo apt-get install libpoppler-cpp-dev
-          sudo apt-get install libcurl4-openssl-dev
-          sudo apt-get install libglu1-mesa-dev
-          sudo apt-get install libmagick++-dev
-          sudo apt-get install libudunits2-dev
-          sudo apt-get install gdal-bin
-          sudo apt-get install libgdal-dev
-          
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Install spatial dependencies
+        run: sudo apt-get install libgdal-dev libproj-dev libgeos-dev libudunits2-dev netcdf-bin
+
       - uses: r-lib/actions/setup-renv@v2
         with:
           cache-version: 1
-          
-      - name: Build html
-        run: Rscript -e "rmarkdown::render('index.Rmd')"
 
-      - name: Build pdf
-        run: Rscript -e "pagedown::chrome_print(input = 'index.html', output = 'index.pdf')"
+      - name: Render Quarto Project
+        uses: quarto-dev/quarto-actions/render@v2
+        with:
+          path: index.qmd
 
-      - name: Prepare deployment
-        run: |
-          mkdir docs
-          mv index.html docs/index.html
-          mv index.pdf docs/index.pdf
-      
       - name: Deploy gh_pages
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: docs
+          FOLDER: index.html
           SINGLE_COMMIT: true
