@@ -40,9 +40,11 @@ library(terra)
 library(htmltools)
 library(viridis)
 library(smoothr)
+library(rmapshaper)
 
 # raw data
 aire_prot_union <- st_read("data_clean/aires_protegees_union.gpkg")
+aire2 <- ms_simplify(aire_prot_union)
 SPI <- read.csv("results/SPI.csv")[, -1]
 names <- as.character(unique(SPI$SPECIES))
 years <- as.numeric(unique(SPI$YEAR))
@@ -60,6 +62,19 @@ for (i in names) {
     df$YEAR2 <- ceiling(df$YEAR)
     all_sm <- rbind(all_sm, df)
 }
+
+# mean SPI
+# --------
+year_mean <- c()
+for (i in years) {
+    sub_year <- SPI$SPI[SPI$YEAR == i]
+    year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
+}
+
+# smooth mean values
+# ------------------
+mm <- cbind(years, year_mean)
+s_mm <- smooth_ksmooth(mm, smoothness = 4)
 
 df_max <- SPI[SPI$SPECIES == "Pseudacris maculata", ]
 df_min <- SPI[SPI$SPECIES == "Desmognathus ochrophaeus", ]
@@ -90,7 +105,7 @@ SPI en fonction du temps avec sp minimale et sp maximale
  - gam sur les deux espèces min et max
 
 ```{r}
-g <- plot_ly() |> add_lines(x = ceiling(s_max[, 1]), y = s_max[, 2], color = I("#238A8DFF"))
+g <- plot_ly() |> add_lines(x = s_mm[, 1], y = s_mm[, 2], color = I("#238A8DFF"))
 
 for (i in names) {
     sm <- all_sm[all_sm$SPECIES == i, ]
@@ -101,9 +116,9 @@ for (i in names) {
         text = i
     )
 }
-g <- add_lines(g, x = ceiling(s_mm[, 1]), y = s_mm[, 2], color = I("#238A8DFF"))
-g <- add_lines(g, x = ceiling(s_min[, 1]), y = s_min[, 2], color = I("#B8DE29FF"))
-g <- add_lines(g, x = ceiling(s_max[, 1]), y = s_max[, 2], color = I("#404788FF"))
+g <- add_lines(g, x = s_mm[, 1], y = s_mm[, 2], color = I("#238A8DFF"))
+g <- add_lines(g, x = s_min[, 1], y = s_min[, 2], color = I("#B8DE29FF"))
+g <- add_lines(g, x = s_max[, 1], y = s_max[, 2], color = I("#404788FF"))
 g |> layout(
     showlegend = F,
     yaxis = list(zeroline = FALSE, title = "SPI"),
@@ -161,5 +176,5 @@ fig
 ## Figure 3
 
 ```{r, echo=F}
-mapview(aire_prot_union, col.regions = "#238A8DFF")
+mapview(aire2, col.regions = "#238A8DFF")
 ```
