@@ -66,7 +66,7 @@ df_min <- SPI[SPI$SPECIES == "Desmognathus ochrophaeus", ]
 s_max <- smooth_ksmooth(as.matrix(df_max[, c(3, 2)]), smoothness = 4)
 s_min <- smooth_ksmooth(as.matrix(df_min[, c(3, 2)]), smoothness = 4)
 # ---
-last_spi <- read.csv2("/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/SPI_north_south.csv")
+last_spi <- read.csv2("data_clean/SPI_north_south.csv")
 
 # Output figure in HTML5
 # if (knitr::is_html_output()) {
