@@ -30,8 +30,11 @@ SPI <- read.csv("results/SPI.csv")[, -1]
 names <- as.character(unique(SPI$SPECIES))
 years <- as.numeric(unique(SPI$YEAR))
 
+SPI_OCC <- read.csv("results/SPI_occ.csv") # ! pas les meme especes que dans SPI
+names_occ <- as.character(unique(SPI_OCC$SPECIES))
+
 # produced data
-# ---
+# --- SPI
 
 all_sm <- data.frame()
 for (i in names) {
@@ -45,6 +48,20 @@ for (i in names) {
     df$INFOS <- paste0("<b>", df$SPECIES, "</b><br>Année <b>", df$YEAR2, "</b><br>SPI = <b>", df$SPI2, "</b>")
     all_sm <- rbind(all_sm, df)
 }
+
+# --- SPI_OCC
+all_sm_occ <- data.frame()
+for (i in names_occ) {
+    m <- cbind(SPI_OCC$YEAR[SPI_OCC$SPECIES == i], SPI_OCC$SPI[SPI_OCC$SPECIES == i])
+    sm <- smooth_ksmooth(m, smoothness = 4)
+    df <- as.data.frame(sm)
+    names(df) <- c("YEAR", "SPI_OCC")
+    df$SPECIES <- i
+    df$YEAR2 <- floor(df$YEAR)
+    df$SPI_OCC2 <- round(df$SPI_OCC, digits = 3)
+    df$INFOS <- paste0("<b>", df$SPECIES, "</b><br>Année <b>", df$YEAR2, "</b><br>SPI = <b>", df$SPI_OCC2, "</b>")
+    all_sm_occ <- rbind(all_sm_occ, df)
+} #error with "Moerckia blyttii" => SPI = NA
 
 # mean SPI
 # --------
