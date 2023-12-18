@@ -1,4 +1,6 @@
 data_clean/aires_repartition.gpkg
+data_clean/aires_protegees_union.gpkg
+
 data_raw/*
 
 /.quarto/

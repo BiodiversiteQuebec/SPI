@@ -5,6 +5,7 @@ library(dplyr)
 library(plotrix)
 library(sf)
 library(smoothr)
+library(lubridate)
 
 ## Data
 
@@ -200,8 +201,11 @@ legend("bottomright",
 #### Figure 3 ####
 # --> map of protected areas
 aires_prot <- suppressWarnings(st_read("data_raw/registre_aires_prot.gpkg", layer = "AP_REG_S", quiet = TRUE))
-aires_prot$year <- as.numeric(substr(aires_prot$DA_CREATIO, start = 1, stop = 4))
+aires_prot$year <- year(aires_prot$DA_CREATIO)
 range(aires_prot$year)
+aires_simpl <- ms_simplify(aires_prot)
+# st_write(aires_simpl,
+# "/home/claire/BDQC-GEOBON/GITHUB/SPI/data_clean/aires_protegees_simplifiees.gpkg")
 
 x11()
 plot(st_geometry(aires_prot))
