@@ -1,2 +1,10 @@
+# data
 data_clean/*
 data_raw/*
+
+#renv/quarto
+renv
+index_files
+index.html
+.vscode
+.quarto
