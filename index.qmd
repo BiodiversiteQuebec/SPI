@@ -23,6 +23,7 @@ library(leaflet)
 
 # raw data
 aires <- st_read("data_clean/aires_protegees_simplifiees.gpkg")
+# sum(aires$HA_LEGAL) # superficie totale des aires protegees = 28060703 ha
 aires_latlon <- st_transform(aires, crs = st_crs(4326))
 aires_latlon$HA_LEGAL2 <- round(aires_latlon$HA_LEGAL, digits = 1)
 aires_latlon$POPINFOS <- paste0("<b>", aires_latlon$NOM, "</b><br> date de création: <b>", aires_latlon$DA_CREATIO, "</b><br> superficie: <b>", aires_latlon$HA_LEGAL2, " ha </b>")
@@ -61,7 +62,7 @@ for (i in names_occ) {
     df$SPI_OCC2 <- round(df$SPI_OCC, digits = 3)
     df$INFOS <- paste0("<b>", df$SPECIES, "</b><br>Année <b>", df$YEAR2, "</b><br>SPI = <b>", df$SPI_OCC2, "</b>")
     all_sm_occ <- rbind(all_sm_occ, df)
-} #error with "Moerckia blyttii" => SPI = NA
+} # error with "Moerckia blyttii" => SPI = NA
 
 # mean SPI
 # --------
@@ -83,7 +84,7 @@ s_min <- smooth_ksmooth(as.matrix(df_min[, c(3, 2)]), smoothness = 4)
 s_range <- list(s_mm, s_max, s_min)
 names(s_range) <- c("s_mm", "s_max", "s_min")
 
-s_range <- lapply(s_range, function(x){
+s_range <- lapply(s_range, function(x) {
     df <- as.data.frame(x)
     names(df) <- c("YEAR_PRED", "SPI")
     df$SPI2 <- round(df$SPI, digits = 3)
@@ -101,7 +102,7 @@ s_min$SP <- "Desmognathus ochrophaeus"
 sm_ls <- list(s_mm, s_min, s_max)
 names(sm_ls) <- c("s_mm", "s_min", "s_max")
 
-sm_ls <- lapply(sm_ls, function(x){
+sm_ls <- lapply(sm_ls, function(x) {
     x$INFOS <- paste0("<b>", x$SP, "</b><br>Année <b>", x$YEAR2, "</b><br>SPI = <b>", x$SPI2, "</b>")
     x
 })
@@ -132,6 +133,8 @@ last_spi <- read.csv2("data_clean/SPI_north_south.csv")
 
 ## **Représentation actuelle des aires protégées du Québec**
 
+Superficie totale protégée = 28 060 703 ha
+
 ```{r, echo=F}
 #| label: fig-aires_prot
 #| fig-cap: "Carte des aires protégées actuelles."
@@ -149,45 +152,50 @@ col_pal <- c("#440154FF", "#39568CFF", "#1F968BFF", "#73D055FF")
 m <- leaflet(aires_latlon) |>
     addTiles() |>
     addPolygons(
-        data = aires_latlon[aires_latlon$year < 1900,],
+        data = aires_latlon[aires_latlon$year < 1900, ],
         color = col_pal[1],
         weight = 1,
         smoothFactor = 0.5,
         opacity = 1.0,
         fillOpacity = 0.5,
         group = "Antérieure à 1900",
-        highlightOptions = highlightOptions(color = "white",
-                                            weight = 2,
-                                            bringToFront = TRUE),
+        highlightOptions = highlightOptions(
+            color = "white",
+            weight = 2,
+            bringToFront = TRUE
+        ),
         popup = aires_latlon$POPINFOS[aires_latlon$year < 1900]
-                ) |>
+    ) |>
     addPolygons(
-        data = aires_latlon[aires_latlon$year >= 1900 & aires_latlon$year < 1950,],
+        data = aires_latlon[aires_latlon$year >= 1900 & aires_latlon$year < 1950, ],
         color = col_pal[4],
         weight = 1,
         smoothFactor = 0.5,
         opacity = 1.0,
         fillOpacity = 0.5,
         group = "Période 1900 - 1950",
-        highlightOptions = highlightOptions(color = "white",
-                                            weight = 2,
-                                            bringToFront = TRUE),
+        highlightOptions = highlightOptions(
+            color = "white",
+            weight = 2,
+            bringToFront = TRUE
+        ),
         popup = aires_latlon$POPINFOS[aires_latlon$year >= 1900 & aires_latlon$year < 1950]
-                ) |>
+    ) |>
     addPolygons(
-        data = aires_latlon[aires_latlon$year >= 1950 & aires_latlon$year < 2000,],
+        data = aires_latlon[aires_latlon$year >= 1950 & aires_latlon$year < 2000, ],
         color = col_pal[2],
         weight = 1,
         smoothFactor = 0.5,
         opacity = 1.0,
         fillOpacity = 0.5,
         group = "Période 1950 - 2000",
-        highlightOptions = highlightOptions(color = "white",
-                                            weight = 2,
-                                            bringToFront = TRUE),
+        highlightOptions = highlightOptions(
+            color = "white",
+            weight = 2,
+            bringToFront = TRUE
+        ),
         popup = aires_latlon$POPINFOS[aires_latlon$year >= 1950 & aires_latlon$year < 2000]
-                                                
-                ) |>
+    ) |>
     addPolygons(
         data = aires_latlon[aires_latlon$year >= 2000, ],
         color = col_pal[3],
@@ -196,17 +204,20 @@ m <- leaflet(aires_latlon) |>
         opacity = 1.0,
         fillOpacity = 0.5,
         group = "Postérieure à 2000",
-        highlightOptions = highlightOptions(color = "white",
-                                            weight = 2,
-                                            bringToFront = TRUE),
+        highlightOptions = highlightOptions(
+            color = "white",
+            weight = 2,
+            bringToFront = TRUE
+        ),
         popup = aires_latlon$POPINFOS[aires_latlon$year >= 2000]
-                ) |>
+    ) |>
     addLayersControl(
-        overlayGroups = c("Antérieure à 1900",
-                            "Période 1900 - 1950",
-                            "Période 1950 - 2000",
-                            "Postérieure à 2000"
-                            ),
+        overlayGroups = c(
+            "Antérieure à 1900",
+            "Période 1900 - 1950",
+            "Période 1950 - 2000",
+            "Postérieure à 2000"
+        ),
         options = layersControlOptions(collapsed = FALSE)
     )
 m
@@ -223,12 +234,13 @@ Avec une moyenne de 11% pour les 225 espèces considérées
 #| fig-cap: "Valeur moyenne et par espèce de l'indice de protection des espèces. La courbe bleue représente le SPI moyen, les courbes verte et pourpre représentent les espèces la moins et la plus protégée, respectivement."
 #| warning: false
 
-g <- plot_ly() |> add_lines(x = s_mm$YEAR_PRED,
-                            y = s_mm$SPI,
-                            color = I("#238A8DFF"),
-                            text = s_mm$INFOS,
-                            hoverinfo = "text"
-        )
+g <- plot_ly() |> add_lines(
+    x = s_mm$YEAR_PRED,
+    y = s_mm$SPI,
+    color = I("#238A8DFF"),
+    text = s_mm$INFOS,
+    hoverinfo = "text"
+)
 
 for (i in names) {
     sm <- all_sm[all_sm$SPECIES == i, ]
