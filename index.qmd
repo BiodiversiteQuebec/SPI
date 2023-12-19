@@ -11,161 +11,7 @@ format:
 ```{r, include = F}
 # packages
 library(knitr)
-library(mapview)
-library(plotly)
-library(sf)
-library(terra)
-library(htmltools)
-library(viridis)
-library(smoothr)
-library(rmapshaper)
-library(leaflet)
-
-# raw data
-aires <- st_read("data_clean/aires_protegees_simplifiees.gpkg")
-# sum(aires$HA_LEGAL) # superficie totale des aires protegees = 28060703 ha
-aires_latlon <- st_transform(aires, crs = st_crs(4326))
-aires_latlon$HA_LEGAL2 <- round(aires_latlon$HA_LEGAL, digits = 1)
-aires_latlon$POPINFOS <- paste0("<b>", aires_latlon$NOM, "</b><br> date de création: <b>", aires_latlon$DA_CREATIO, "</b><br> superficie: <b>", aires_latlon$HA_LEGAL2, " ha </b>")
-SPI <- read.csv("results/SPI.csv")[, -1]
-names <- as.character(unique(SPI$SPECIES))
-years <- as.numeric(unique(SPI$YEAR))
-
-SPI_OCC <- read.csv("results/SPI_occ.csv") # ! pas les meme especes que dans SPI
-names_occ <- as.character(unique(SPI_OCC$SPECIES))
-# data treatment - remove is.na(SPI_OCC) concerning "Moerckia blyttii" &  "Information masquée"
-SPI_OCC <- SPI_OCC[!is.na(SPI_OCC$SPI), ]
-SPI_OCC <- SPI_OCC[!(SPI_OCC$SPECIES == "Information masquée"), ]
-
-
-# produced data
-# -----------------------
-# --- SPI - distribution
-# ------------------------
-
-all_sm <- data.frame()
-for (i in names) {
-    m <- cbind(SPI$YEAR[SPI$SPECIES == i], SPI$SPI[SPI$SPECIES == i])
-    sm <- smooth_ksmooth(m, smoothness = 4)
-    df <- as.data.frame(sm)
-    names(df) <- c("YEAR", "SPI")
-    df$SPECIES <- i
-    df$YEAR2 <- floor(df$YEAR)
-    df$SPI2 <- round(df$SPI, digits = 3)
-    df$INFOS <- paste0("<b>", df$SPECIES, "</b><br>Année <b>", df$YEAR2, "</b><br>SPI = <b>", df$SPI2, "</b>")
-    all_sm <- rbind(all_sm, df)
-}
-
-# mean SPI
-# --------
-year_mean <- c()
-for (i in years) {
-    sub_year <- SPI$SPI[SPI$YEAR == i]
-    year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
-}
-
-# smooth mean & min-max values
-# -----------------------------
-mm <- cbind(years, year_mean)
-s_mm <- smooth_ksmooth(mm, smoothness = 4)
-df_max <- SPI[SPI$SPECIES == "Pseudacris maculata", ]
-df_min <- SPI[SPI$SPECIES == "Desmognathus ochrophaeus", ]
-s_max <- smooth_ksmooth(as.matrix(df_max[, c(3, 2)]), smoothness = 4)
-s_min <- smooth_ksmooth(as.matrix(df_min[, c(3, 2)]), smoothness = 4)
-
-s_range <- list(s_mm, s_max, s_min)
-names(s_range) <- c("s_mm", "s_max", "s_min")
-
-s_range <- lapply(s_range, function(x) {
-    df <- as.data.frame(x)
-    names(df) <- c("YEAR_PRED", "SPI")
-    df$SPI2 <- round(df$SPI, digits = 3)
-    df$YEAR2 <- floor(df$YEAR)
-    df
-})
-
-s_mm <- s_range[["s_mm"]]
-s_mm$SP <- "Valeur moyenne"
-s_max <- s_range[["s_max"]]
-s_max$SP <- "Pseudacris maculata"
-s_min <- s_range[["s_min"]]
-s_min$SP <- "Desmognathus ochrophaeus"
-
-sm_ls <- list(s_mm, s_min, s_max)
-names(sm_ls) <- c("s_mm", "s_min", "s_max")
-
-sm_ls <- lapply(sm_ls, function(x) {
-    x$INFOS <- paste0("<b>", x$SP, "</b><br>Année <b>", x$YEAR2, "</b><br>SPI = <b>", x$SPI2, "</b>")
-    x
-})
-
-s_mm <- sm_ls[[1]]
-s_min <- sm_ls[[2]]
-s_max <- sm_ls[[3]]
-
-# ---------------------
-# --- SPI - occurrence
-# ----------------------
-
-all_sm_occ <- data.frame()
-spe_name <- unique(SPI_OCC$SPECIES)
-for (i in spe_name) {
-    m <- cbind(SPI_OCC$YEAR[SPI_OCC$SPECIES == i], SPI_OCC$SPI[SPI_OCC$SPECIES == i])
-    sm <- smooth_ksmooth(m, smoothness = 4)
-    df <- as.data.frame(sm)
-    names(df) <- c("YEAR", "SPI")
-    df$SPECIES <- i
-    df$YEAR2 <- floor(df$YEAR)
-    df$SPI2 <- round(df$SPI, digits = 3)
-    df$INFOS <- paste0("<b>", df$SPECIES, "</b><br>Année <b>", df$YEAR2, "</b><br>SPI = <b>", df$SPI2, "</b>")
-    all_sm_occ <- rbind(all_sm_occ, df)
-}
-
-# mean SPI
-# --------
-year_mean_occ <- c()
-for (i in years) {
-    sub_year <- SPI_OCC$SPI[SPI_OCC$YEAR == i]
-    year_mean_occ <- c(year_mean_occ, mean(sub_year, na.rm = TRUE))
-}
-
-# smooth mean & min-max values
-# ----------------------------
-
-# mean
-mm_occ <- cbind(years, year_mean_occ)
-s_mm_occ <- smooth_ksmooth(mm_occ, smoothness = 4)
-s_mm_occ <- as.data.frame(s_mm_occ)
-names(s_mm_occ) <- c("YEAR_PRED", "SPI")
-s_mm_occ$SPECIES <- "Valeur moyenne"
-
-# min - max
-SPI_OCC2023 <- SPI_OCC[SPI_OCC$YEAR == 2023, ]
-summary(SPI_OCC2023)
-
-max_sp <- unique(SPI_OCC2023$SPECIES[SPI_OCC2023$SPI == max(SPI_OCC2023$SPI)]) # only one species - "Forsstroemia trichomitria"
-min_sp <- unique(SPI_OCC2023$SPECIES[SPI_OCC2023$SPI == min(SPI_OCC2023$SPI)]) # 100 species with SPI = 0
-
-df_max_occ <- SPI_OCC[SPI_OCC$SPECIES %in% max_sp, ]
-s_max_occ <- smooth_ksmooth(as.matrix(df_max_occ[, c(3, 2)]), smoothness = 4)
-s_max_occ <- as.data.frame(s_max_occ)
-names(s_max_occ) <- c("YEAR_PRED", "SPI")
-s_max_occ$SPECIES <- max_sp
-
-df_min_occ <- SPI_OCC[SPI_OCC$SPECIES %in% min_sp, ]
-df_ls <- split(df_min_occ, df_min_occ$SPECIES)
-df_ls2 <- lapply(df_ls, function(x) {
-    mat <- smooth_ksmooth(as.matrix(x[, c(3, 2)]), smoothness = 4)
-    mat_df <- as.data.frame(mat)
-    names(mat_df) <- c("YEAR_PRED", "SPI")
-    mat_df$SPECIES <- unique(x$SPECIES)
-    mat_df
-})
-s_min_occ <- do.call("rbind", df_ls2)
-
-# global DF
-s_occ_range <- rbind(s_mm_occ, s_max_occ, s_min_occ)
-s_occ_range$INFOS <- paste0("<b>", s_occ_range$SPECIES, "</b><br>Année <b>", floor(s_occ_range$YEAR), "</b><br>SPI = <b>", round(s_occ_range$SPI, digits = 3), "</b>")
+source("scr/03-data_n_figures_for_quarto.r")
 
 # ----------------------------
 # --- last SPI - distribution
@@ -293,54 +139,34 @@ Avec une moyenne de 11% pour les 225 espèces considérées
 #| fig-cap: "Valeur moyenne et par espèce de l'indice de protection des espèces. La courbe bleue représente le SPI moyen, les courbes verte et pourpre représentent les espèces la moins et la plus protégée, respectivement."
 #| warning: false
 
-g <- plot_ly() |> add_lines(
-    x = s_mm$YEAR_PRED,
-    y = s_mm$SPI,
-    color = I("#238A8DFF"),
-    text = s_mm$INFOS,
-    hoverinfo = "text"
-)
+# g <- plot_ly() |> add_lines(
+#     x = s_mm$YEAR_PRED,
+#     y = s_mm$SPI,
+#     color = I("#238A8DFF"),
+#     text = s_mm$INFOS,
+#     hoverinfo = "text"
+# )
 
-for (i in names) {
-    sm <- all_sm[all_sm$SPECIES == i, ]
-    g <- add_lines(g,
-        x = sm$YEAR,
-        y = sm$SPI,
-        color = I("lightgrey"),
-        text = sm$INFOS,
-        hoverinfo = "text"
-    )
-}
-g <- add_lines(g, x = s_mm$YEAR_PRED, y = s_mm$SPI, color = I("#238A8DFF"), text = s_mm$INFOS, hoverinfo = "text")
-g <- add_lines(g, x = s_min$YEAR_PRED, y = s_min$SPI, color = I("#B8DE29FF"), text = s_min$INFOS, hoverinfo = "text")
-g <- add_lines(g, x = s_max$YEAR_PRED, y = s_max$SPI, color = I("#404788FF"), text = s_max$INFOS, hoverinfo = "text")
-g |> layout(
-    showlegend = F,
-    yaxis = list(zeroline = FALSE, title = "SPI"),
-    xaxis = list(zeroline = FALSE, title = "Année")
-)
-```
-
-```{r, echo=F, warnings=F}
-#| label: fig-spi_occ_trend
-#| fig-cap: "Valeur moyenne et par espèce de l'indice de protection des espèces. La courbe bleue représente le SPI moyen, les courbes verte et pourpre représentent les espèces la moins et la plus protégée, respectivement."
-#| warning: false
-# test <- all_sm_occ 
-# g <- plot_ly(
-#     type = "scatter",
-#     x = test$YEAR,
-#     y = test$SPI,
-#     text = test$INFOS,
-#     hoverinfo = "text",
-#     mode = "lines",
-#     transforms = list(
-#         list(
-#             type = "groupby",
-#             groups = test$SPECIES
-#         )
+# for (i in names) {
+#     sm <- all_sm[all_sm$SPECIES == i, ]
+#     g <- add_lines(g,
+#         x = sm$YEAR,
+#         y = sm$SPI,
+#         color = I("lightgrey"),
+#         text = sm$INFOS,
+#         hoverinfo = "text"
 #     )
-# ) 
-# g 
+# }
+# g <- add_lines(g, x = s_mm$YEAR_PRED, y = s_mm$SPI, color = I("#238A8DFF"), text = s_mm$INFOS, hoverinfo = "text")
+# g <- add_lines(g, x = s_min$YEAR_PRED, y = s_min$SPI, color = I("#B8DE29FF"), text = s_min$INFOS, hoverinfo = "text")
+# g <- add_lines(g, x = s_max$YEAR_PRED, y = s_max$SPI, color = I("#404788FF"), text = s_max$INFOS, hoverinfo = "text")
+# g |> layout(
+#     showlegend = F,
+#     yaxis = list(zeroline = FALSE, title = "SPI"),
+#     xaxis = list(zeroline = FALSE, title = "Année")
+# )
+
+print(g)
 ```
 
 ## **Moments marquants de la création des aires protégées**  
