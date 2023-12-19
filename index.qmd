@@ -33,9 +33,15 @@ years <- as.numeric(unique(SPI$YEAR))
 
 SPI_OCC <- read.csv("results/SPI_occ.csv") # ! pas les meme especes que dans SPI
 names_occ <- as.character(unique(SPI_OCC$SPECIES))
+# data treatment - remove is.na(SPI_OCC) concerning "Moerckia blyttii" &  "Information masquée"
+SPI_OCC <- SPI_OCC[!is.na(SPI_OCC$SPI), ]
+SPI_OCC <- SPI_OCC[!(SPI_OCC$SPECIES == "Information masquée"), ]
+
 
 # produced data
-# --- SPI
+# -----------------------
+# --- SPI - distribution
+# ------------------------
 
 all_sm <- data.frame()
 for (i in names) {
@@ -50,20 +56,6 @@ for (i in names) {
     all_sm <- rbind(all_sm, df)
 }
 
-# --- SPI_OCC
-all_sm_occ <- data.frame()
-for (i in names_occ) {
-    m <- cbind(SPI_OCC$YEAR[SPI_OCC$SPECIES == i], SPI_OCC$SPI[SPI_OCC$SPECIES == i])
-    sm <- smooth_ksmooth(m, smoothness = 4)
-    df <- as.data.frame(sm)
-    names(df) <- c("YEAR", "SPI_OCC")
-    df$SPECIES <- i
-    df$YEAR2 <- floor(df$YEAR)
-    df$SPI_OCC2 <- round(df$SPI_OCC, digits = 3)
-    df$INFOS <- paste0("<b>", df$SPECIES, "</b><br>Année <b>", df$YEAR2, "</b><br>SPI = <b>", df$SPI_OCC2, "</b>")
-    all_sm_occ <- rbind(all_sm_occ, df)
-} # error with "Moerckia blyttii" => SPI = NA
-
 # mean SPI
 # --------
 year_mean <- c()
@@ -72,8 +64,8 @@ for (i in years) {
     year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
 }
 
-# smooth mean values
-# ------------------
+# smooth mean & min-max values
+# -----------------------------
 mm <- cbind(years, year_mean)
 s_mm <- smooth_ksmooth(mm, smoothness = 4)
 df_max <- SPI[SPI$SPECIES == "Pseudacris maculata", ]
@@ -111,7 +103,74 @@ s_mm <- sm_ls[[1]]
 s_min <- sm_ls[[2]]
 s_max <- sm_ls[[3]]
 
-# ---
+# ---------------------
+# --- SPI - occurrence
+# ----------------------
+
+all_sm_occ <- data.frame()
+spe_name <- unique(SPI_OCC$SPECIES)
+for (i in spe_name) {
+    m <- cbind(SPI_OCC$YEAR[SPI_OCC$SPECIES == i], SPI_OCC$SPI[SPI_OCC$SPECIES == i])
+    sm <- smooth_ksmooth(m, smoothness = 4)
+    df <- as.data.frame(sm)
+    names(df) <- c("YEAR", "SPI")
+    df$SPECIES <- i
+    df$YEAR2 <- floor(df$YEAR)
+    df$SPI2 <- round(df$SPI, digits = 3)
+    df$INFOS <- paste0("<b>", df$SPECIES, "</b><br>Année <b>", df$YEAR2, "</b><br>SPI = <b>", df$SPI2, "</b>")
+    all_sm_occ <- rbind(all_sm_occ, df)
+}
+
+# mean SPI
+# --------
+year_mean_occ <- c()
+for (i in years) {
+    sub_year <- SPI_OCC$SPI[SPI_OCC$YEAR == i]
+    year_mean_occ <- c(year_mean_occ, mean(sub_year, na.rm = TRUE))
+}
+
+# smooth mean & min-max values
+# ----------------------------
+
+# mean
+mm_occ <- cbind(years, year_mean_occ)
+s_mm_occ <- smooth_ksmooth(mm_occ, smoothness = 4)
+s_mm_occ <- as.data.frame(s_mm_occ)
+names(s_mm_occ) <- c("YEAR_PRED", "SPI")
+s_mm_occ$SPECIES <- "Valeur moyenne"
+
+# min - max
+SPI_OCC2023 <- SPI_OCC[SPI_OCC$YEAR == 2023, ]
+summary(SPI_OCC2023)
+
+max_sp <- unique(SPI_OCC2023$SPECIES[SPI_OCC2023$SPI == max(SPI_OCC2023$SPI)]) # only one species - "Forsstroemia trichomitria"
+min_sp <- unique(SPI_OCC2023$SPECIES[SPI_OCC2023$SPI == min(SPI_OCC2023$SPI)]) # 100 species with SPI = 0
+
+df_max_occ <- SPI_OCC[SPI_OCC$SPECIES %in% max_sp, ]
+s_max_occ <- smooth_ksmooth(as.matrix(df_max_occ[, c(3, 2)]), smoothness = 4)
+s_max_occ <- as.data.frame(s_max_occ)
+names(s_max_occ) <- c("YEAR_PRED", "SPI")
+s_max_occ$SPECIES <- max_sp
+
+df_min_occ <- SPI_OCC[SPI_OCC$SPECIES %in% min_sp, ]
+df_ls <- split(df_min_occ, df_min_occ$SPECIES)
+df_ls2 <- lapply(df_ls, function(x) {
+    mat <- smooth_ksmooth(as.matrix(x[, c(3, 2)]), smoothness = 4)
+    mat_df <- as.data.frame(mat)
+    names(mat_df) <- c("YEAR_PRED", "SPI")
+    mat_df$SPECIES <- unique(x$SPECIES)
+    mat_df
+})
+s_min_occ <- do.call("rbind", df_ls2)
+
+# global DF
+s_occ_range <- rbind(s_mm_occ, s_max_occ, s_min_occ)
+s_occ_range$INFOS <- paste0("<b>", s_occ_range$SPECIES, "</b><br>Année <b>", floor(s_occ_range$YEAR), "</b><br>SPI = <b>", round(s_occ_range$SPI, digits = 3), "</b>")
+
+# ----------------------------
+# --- last SPI - distribution
+# ----------------------------
+
 last_spi <- read.csv2("data_clean/SPI_north_south.csv")
 
 # Output figure in HTML5
@@ -255,6 +314,62 @@ for (i in names) {
 g <- add_lines(g, x = s_mm$YEAR_PRED, y = s_mm$SPI, color = I("#238A8DFF"), text = s_mm$INFOS, hoverinfo = "text")
 g <- add_lines(g, x = s_min$YEAR_PRED, y = s_min$SPI, color = I("#B8DE29FF"), text = s_min$INFOS, hoverinfo = "text")
 g <- add_lines(g, x = s_max$YEAR_PRED, y = s_max$SPI, color = I("#404788FF"), text = s_max$INFOS, hoverinfo = "text")
+g |> layout(
+    showlegend = F,
+    yaxis = list(zeroline = FALSE, title = "SPI"),
+    xaxis = list(zeroline = FALSE, title = "Année")
+)
+```
+
+```{r, echo=F, warnings=F}
+#| label: fig-spi_occ_trend
+#| fig-cap: "Valeur moyenne et par espèce de l'indice de protection des espèces. La courbe bleue représente le SPI moyen, les courbes verte et pourpre représentent les espèces la moins et la plus protégée, respectivement."
+#| warning: false
+
+g <- plot_ly() |> add_lines(
+    x = s_mm_occ$YEAR_PRED,
+    y = s_mm_occ$SPI,
+    color = I("#238A8DFF"),
+    text = s_mm_occ$INFOS,
+    hoverinfo = "text"
+)
+
+for (i in spe_name) {
+    sm <- all_sm_occ[all_sm_occ$SPECIES == i, ]
+    g <- add_lines(g,
+        x = sm$YEAR,
+        y = sm$SPI,
+        color = I("lightgrey"),
+        text = sm$INFOS,
+        hoverinfo = "text"
+    )
+}
+g <- add_lines(
+    g,
+    x = s_mm_occ$YEAR_PRED,
+    y = s_mm_occ$SPI,
+    color = I("#238A8DFF"),
+    text = s_mm_occ$INFOS,
+    hoverinfo = "text")
+g <- add_lines(
+    g,
+    x = s_max_occ$YEAR_PRED,
+    y = s_max_occ$SPI,
+    color = I("#404788FF"),
+    text = s_max_occ$INFOS,
+    hoverinfo = "text")
+
+for(i in unique(s_min_occ$SPECIES)) {
+        g <- add_lines(
+            g,
+            x = s_min_occ$YEAR_PRED[s_min_occ$SPECIES == i],
+            y = s_min_occ$SPI[s_min_occ$SPECIES == i],
+            color = I("#B8DE29FF"),
+            text = s_min_occ$INFOS[s_min_occ$SPECIES == i],
+            hoverinfo = "text")
+
+}
+
 g |> layout(
     showlegend = F,
     yaxis = list(zeroline = FALSE, title = "SPI"),
