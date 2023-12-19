@@ -1,11 +1,15 @@
+# data 
 data_clean/aires_repartition.gpkg
 data_clean/aires_protegees_union.gpkg
 
 data_raw/*
 
+# gh-page
 /.quarto/
-
 *.html
 index_files
-
 .vscode
+
+# renv
+.Rprofile
+renv/
