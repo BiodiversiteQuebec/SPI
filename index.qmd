@@ -139,32 +139,40 @@ Avec une moyenne de 11% pour les 225 espèces considérées
 #| fig-cap: "Valeur moyenne et par espèce de l'indice de protection des espèces. La courbe bleue représente le SPI moyen, les courbes verte et pourpre représentent les espèces la moins et la plus protégée, respectivement."
 #| warning: false
 
-# g <- plot_ly() |> add_lines(
-#     x = s_mm$YEAR_PRED,
-#     y = s_mm$SPI,
-#     color = I("#238A8DFF"),
-#     text = s_mm$INFOS,
-#     hoverinfo = "text"
-# )
-
-# for (i in names) {
-#     sm <- all_sm[all_sm$SPECIES == i, ]
-#     g <- add_lines(g,
-#         x = sm$YEAR,
-#         y = sm$SPI,
-#         color = I("lightgrey"),
-#         text = sm$INFOS,
-#         hoverinfo = "text"
-#     )
-# }
-# g <- add_lines(g, x = s_mm$YEAR_PRED, y = s_mm$SPI, color = I("#238A8DFF"), text = s_mm$INFOS, hoverinfo = "text")
-# g <- add_lines(g, x = s_min$YEAR_PRED, y = s_min$SPI, color = I("#B8DE29FF"), text = s_min$INFOS, hoverinfo = "text")
-# g <- add_lines(g, x = s_max$YEAR_PRED, y = s_max$SPI, color = I("#404788FF"), text = s_max$INFOS, hoverinfo = "text")
-# g |> layout(
-#     showlegend = F,
-#     yaxis = list(zeroline = FALSE, title = "SPI"),
-#     xaxis = list(zeroline = FALSE, title = "Année")
-# )
+g <- plot_ly(
+  type = "scatter",
+  x = sspi_df$YEAR[sspi_df$GROUPE == "mean"],
+  y = sspi_df$SPI[sspi_df$GROUPE == "mean"],
+  text = sspi_df$POPINFOS[sspi_df$GROUPE == "mean"],
+  hoverinfo = "text",
+  mode = "lines")
+for (i in unique(sspi_df$SPECIES[sspi_df$GROUPE == "other"])) {
+  g <- add_lines(g, 
+                 x = sspi_df$YEAR[sspi_df$SPECIES == i],
+                 y = sspi_df$SPI[sspi_df$SPECIES == i],
+                 text = sspi_df$POPINFOS[sspi_df$SPECIES == i],
+                 color = I(rgb(190, 190, 190, alpha = 100, maxColorValue = 255)))
+}
+g <- add_lines(g, 
+          x = sspi_df$YEAR[sspi_df$GROUPE == "max"],
+          y = sspi_df$SPI[sspi_df$GROUPE == "max"],
+          text = sspi_df$POPINFOS[sspi_df$GROUPE == "max"],
+          color = I("#404788FF"))
+g <- add_lines(g, 
+          x = sspi_df$YEAR[sspi_df$GROUPE == "min"],
+          y = sspi_df$SPI[sspi_df$GROUPE == "min"],
+          text = sspi_df$POPINFOS[sspi_df$GROUPE == "min"],
+          color = I("#B8DE29FF"))
+g <- add_lines(g, 
+          x = sspi_df$YEAR[sspi_df$GROUPE == "mean"],
+          y = sspi_df$SPI[sspi_df$GROUPE == "mean"],
+          text = sspi_df$POPINFOS[sspi_df$GROUPE == "mean"],
+          color = I("#238A8DFF"))
+g |> layout(
+    showlegend = F,
+    yaxis = list(zeroline = FALSE, title = "SPI"),
+    xaxis = list(zeroline = FALSE, title = "Année")
+)
 
 print(g)
 ```

@@ -76,25 +76,26 @@ sspi_df$GROUPE[sspi_df$SPECIES == max_spe] <- "max"
 sspi_df$GROUPE[sspi_df$SPECIES == min_spe] <- "min"
 sspi_df$GROUPE[is.na(sspi_df$GROUPE)] <- "other"
 
-table(sspi_df$GROUPE, useNA = "always")
+# table(sspi_df$GROUPE, useNA = "always")
 
-g <- plot_ly(
-    type = "scatter",
-    x = sspi_df$YEAR,
-    y = sspi_df$SPI,
-    text = sspi_df$POPINFOS,
-    hoverinfo = "text",
-    mode = "lines",
-    transforms = list(
-        list(
-            type = "groupby",
-            groups = sspi_df$GROUPE,
-            styles = list(
-                list(target = "min", value = list(marker = list(color = "#B8DE29FF"))),
-                list(target = "max", value = list(marker = list(color = "#404788FF"))),
-                list(target = "mean", value = list(marker = list(color = "#238A8DFF"))),
-                list(target = "other", value = list(marker = list(color = "grey")))
-            )
-        )
-    )
-) 
+# g <- plot_ly(
+#     type = "scatter",
+#     x = sspi_df$YEAR[sspi_df$GROUPE == "mean"],
+#     y = sspi_df$SPI[sspi_df$GROUPE == "mean"],
+#     text = sspi_df$POPINFOS[sspi_df$GROUPE == "mean"],
+#     hoverinfo = "text",
+#     mode = "lines")
+#     ,
+#     transforms = list(
+#         list(
+#             type = "groupby",
+#             groups = sspi_df$GROUPE,
+#             styles = list(
+#                 list(target = "min", value = list(marker = list(color = "#B8DE29FF"))),
+#                 list(target = "max", value = list(marker = list(color = "#404788FF"))),
+#                 list(target = "mean", value = list(marker = list(color = "#238A8DFF"))),
+#                 list(target = "other", value = list(marker = list(color = "grey")))
+#             )
+#         )
+#     )
+# ) 
