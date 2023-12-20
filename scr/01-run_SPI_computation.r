@@ -24,6 +24,9 @@ run_SPI_computation <- function(SPECIES, YEAR, PROTECTED_AREA_TYPE = "", UNION =
     #------------------------------------------------------------------------------
     # Species Range maps
     occurences <- st_read("data_raw/emvs_dq.gpkg", quiet = TRUE)
+    ## Small hack to fix a typo in the species name
+    w <- which(occurences$SNAME == "Moerckia blyttii‏")
+    occurences$SNAME[w] <- "Moerckia blyttii"
     
     # Subset species
     occurences_sp <- occurences[occurences$SNAME %in% SPECIES,]
