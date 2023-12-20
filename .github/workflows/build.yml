@@ -31,7 +31,7 @@ jobs:
 
       - name: Render Quarto Project
         run: QUARTO_DENO_EXTRA_OPTIONS="--v8-flags=--max-old-space-size=8192" quarto render index.qmd --to html
-        uses: quarto-dev/quarto-actions/render@v2
+        # uses: quarto-dev/quarto-actions/render@v2
         with:
           path: index.qmd
 
