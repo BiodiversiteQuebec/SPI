@@ -40,7 +40,7 @@ plot_SPI_time_series <- function(...) {
     plot(years, SPI$SPI[SPI$SPECIES == names[1]],
         ylim = c(0, 0.7),
         type = "l", col = "lightgrey",
-        xlab = "Year", ylab = "SPI", ...
+        xlab='Année', ylab='SPI', ...
     )
     for (i in names[-1]) {
         lines(years, SPI$SPI[SPI$SPECIES == i], type = "l", col = "lightgrey")
@@ -92,8 +92,8 @@ plot_SPI_scores <- function() {
     par(mfrow = c(2, 3))
 
     hist(SPI$SPI,
-        breaks = 20, main = paste("All SPI scores"),
-        xlab = "SPI score", ylab = "Number of species"
+        breaks = 20, main = paste("Toutes les années"),
+        xlab = "Score SPI", ylab = "Nombre d'espèces"
     )
 
     for (year in years) {
@@ -103,8 +103,8 @@ plot_SPI_scores <- function() {
         } else {
             hist(SPI$SPI[SPI$YEAR == year],
                 breaks = seq(0, 1, by = 0.05),
-                main = paste("SPI scores in", year),
-                xlab = "SPI score", ylab = "Number of species",
+                main = paste("Score SPI en", year),
+                xlab = "Score SPI", ylab = "Nombre d'espèces",
                 xlim = c(0, 0.4)
             )
         }
@@ -135,7 +135,7 @@ plot_SPI_by_group <- function() {
     par(mfrow = c(2, 3))
 
     # Plot all species
-    plot_SPI_time_series(main = "All species")
+    plot_SPI_time_series(main = "Toutes les espèces")
 
     # Plot species by group
     for (i in seq_along(groups)) {
@@ -148,7 +148,7 @@ plot_SPI_by_group <- function() {
         plot(sub$YEAR[sub$SPECIES == sub_sp[1]], sub$SPI[sub$SPECIES == sub_sp[1]],
             ylim = c(0, 0.7),
             type = "l", col = "lightgrey",
-            xlab = "Year", ylab = "SPI",
+            xlab = "Année", ylab = "SPI",
             main = names(groups)[i]
         )
         for (sp in sub_sp) {
@@ -207,7 +207,7 @@ plot_SPI_at_risk <- function() {
         ylim = c(0, 0.2),
         type = "l", col = "lightgrey",
         xlab = "Year", ylab = "SPI",
-        main = "Species at risk"
+        main = "Espèces à statut précaire au Québec"
     )
     for (i in 2:dim(sub)[1]) {
         lines(years, sub[i, ], type = "l", col = "lightgrey")
@@ -215,7 +215,7 @@ plot_SPI_at_risk <- function() {
 
     # Stransform the data to a long format
     sub_long <- reshape2::melt(sub)
-    names(sub_long) <- c("year", "SPI")
+    names(sub_long) <- c("Année", "SPI")
     sub_long$year <- sub("X", "", sub_long$year) |> as.numeric()
 
     # Add a trendline
@@ -254,12 +254,13 @@ plot_protected_area <- function() {
 
     dat <- dat[order(dat$annee), ]
     dat$area_cum <- cumsum(area)
-    names(dat) <- c("annee", "area", "area_cum")
+    dat$area_prop <- dat$area_cum / 166800000
+    names(dat) <- c("annee", "area", "area_cum", "area_prop")
 
 
-    plot(dat$annee, dat$area_cum,
+    plot(dat$annee, dat$area_prop,
         col = "black",
-        xlab = "Year", ylab = "Area (Ha)", main = "Protected area in Quebec"
+        xlab = "Année", ylab = "Proportion du territoire protégé", main = "Territoire portégé au Québec"
     )
 }
 
@@ -300,32 +301,99 @@ plot_SPI_regions <- function(SPI, ...) {
         dplyr::select(NOM_SCIENT) |>
         unique() |>
         unlist()
+
     # Isolate the two first characters of the LATDMS column
-    southern_aires <- which(substr(aires_prot$LATDMS, 1, 2) <= 50)
-    northern_aires <- which(substr(aires_prot$LATDMS, 1, 2) > 50)
+    # southern_aires <- which(substr(aires_prot$LATDMS, 1, 2) <= 50)
+    # northern_aires <- which(substr(aires_prot$LATDMS, 1, 2) > 50)
 
     names <- as.character(unique(SPI$SPECIES))
     years <- as.numeric(unique(SPI$YEAR)) |> sort()
 
-    plot(SPI$YEAR[SPI$SPECIES == names[1]], SPI$SPI[SPI$SPECIES == names[1]],
+    old_par <- par()
+    par(mfrow = c(1, 2))
+    # Plot Southern species
+    SPI_sud <- SPI[SPI$SPECIES %in% southern_sp, ]
+    plot(SPI_sud$YEAR[SPI_sud$SPECIES == southern_sp[1]], SPI_sud$SPI[SPI_sud$SPECIES == southern_sp[1]],
         ylim = c(0, 0.7),
         type = "l", col = "lightgrey",
-        xlab = "Year", ylab = "SPI", ...
+        xlab = "Année", ylab = "SPI", main = "Espèces majoritairement <50e parallèle"
     )
-    for (i in names[-1]) {
-        lines(SPI$YEAR[SPI$SPECIES == i], SPI$SPI[SPI$SPECIES == i], type = "l", col = "lightgrey")
+    for (i in southern_sp[-1]) {
+        lines(SPI_sud$YEAR[SPI_sud$SPECIES == i], SPI_sud$SPI[SPI_sud$SPECIES == i], type = "l", col = "lightgrey")
     }
-
     # Transform the data to a long format
     year_mean <- c()
     for (i in years) {
-        sub_year <- SPI$SPI[SPI$YEAR == i]
+        sub_year <- SPI_sud$SPI[SPI_sud$YEAR == i]
         year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
     }
-
     # Add a treandline
     ## Mean
     lines(years, year_mean, type = "l", col = "black", lwd = 2)
     ## Linear regression
-    lm(SPI$SPI ~ SPI$YEAR) |> abline(lwd = 2, col = "red", lty = 2)
+    lm(SPI_sud$SPI ~ SPI_sud$YEAR) |> abline(lwd = 2, col = "red", lty = 2)
+
+    # Plot Northern species
+    SPI_nord <- SPI[SPI$SPECIES %in% northern_sp, ]
+    plot(SPI_nord$YEAR[SPI_nord$SPECIES == northern_sp[1]], SPI_nord$SPI[SPI_nord$SPECIES == northern_sp[1]],
+        ylim = c(0, 0.7),
+        type = "l", col = "lightgrey",
+        xlab = "Année", ylab = "SPI", main = "Espèces majoritairement >50e parallèle"
+    )
+    for (i in northern_sp[-1]) {
+        lines(SPI_nord$YEAR[SPI_nord$SPECIES == i], SPI_nord$SPI[SPI_nord$SPECIES == i], type = "l", col = "lightgrey")
+    }
+    # Transform the data to a long format
+    year_mean <- c()
+    for (i in years) {
+        sub_year <- SPI_nord$SPI[SPI_nord$YEAR == i]
+        year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
+    }
+    # Add a treandline
+    ## Mean
+    lines(years, year_mean, type = "l", col = "black", lwd = 2)
+    ## Linear regression
+    lm(SPI_nord$SPI ~ SPI_nord$YEAR) |> abline(lwd = 2, col = "red", lty = 2)
 }
+
+
+###############################################################################
+# Plot SPI by classes of range sizes
+#
+# Arguments:
+#
+# Author: Victor Cameron
+# Date: 2023-12-20
+###############################################################################
+plot_SPI_range_size <- function() {
+    SPI <- read.csv("results/SPI.csv")[, -1]
+
+    # Read the range maps
+    range_maps <- st_read("data_clean/aires_repartition.gpkg", quiet = TRUE)
+
+    # Compute the range size
+    range_maps$range_size <- st_area(range_maps) |> as.numeric()
+
+    # Compute the range size classes
+    range_maps$range_size_class <- cut(range_maps$range_size, breaks = c(0, 100, 1000, 10000, 100000, 1000000, Inf))
+
+    # Compute the mean SPI for each species
+    SPI$mean_SPI <- ave(SPI$SPI, SPI$SPECIES, FUN = mean)
+
+    # Merge the two data frames
+    SPI <- merge(SPI, range_maps, by = "NOM_SCIENT")
+
+    # Plot the data
+    plot(SPI$range_size, SPI$mean_SPI,
+        xlab = "Taille de l'aire de répartition (km2)",
+        ylab = "SPI moyen",
+        log = "x"
+    )
+    abline(lm(SPI$mean_SPI ~ SPI$range_size), col = "red")
+}
+
+
+# TO SAVE THE PLOTS
+# png("results/SPI_scores.png", width = 3000, height = 2000, res = 300)
+# plot_SPI_scores()
+# dev.off()
