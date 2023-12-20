@@ -44,6 +44,7 @@ plot_SPI_scores() # Histogram of SPI scores for a given year
 plot_SPI_by_group() # Time series of SPI values devided by species groups
 # plot_SPI_at_risk() # Time series of SPI values for species at risk
 plot_SPI_regions() # Time series of SPI values for south and north regions
+plot_SPI_by_occurences() # Time series of SPI values for species with different number of occurences
 ```
 
 ## Data

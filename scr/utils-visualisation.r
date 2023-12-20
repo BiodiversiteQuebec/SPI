@@ -40,7 +40,7 @@ plot_SPI_time_series <- function(...) {
     plot(years, SPI$SPI[SPI$SPECIES == names[1]], 
         ylim = c(0,1), xlim = c(1880, 2025),
         type='l', col='lightgrey',
-        xlab='Year', ylab='SPI', ...)
+        xlab='Année', ylab='SPI', ...)
     for (i in names[-1]) {
         lines(years, SPI$SPI[SPI$SPECIES == i], type='l', col='lightgrey')
         # Sys.sleep(0.1)
@@ -59,6 +59,11 @@ plot_SPI_time_series <- function(...) {
     ## Linear regression
     lm(SPI$SPI ~ SPI$YEAR) |> abline(lwd=2, col='red', lty=2)
 
+    # Add a legend
+    legend("topleft", legend = c("Espèces", "Moyenne", "modèle linéaire"), 
+        col = c("lightgrey", "black", "red"), 
+        lty = c(1,1,2), lwd = c(1,2,2),
+        bty = "n")
 }
 
 
@@ -90,7 +95,7 @@ plot_SPI_scores <- function() {
             hist(SPI$SPI[SPI$YEAR == year], breaks = seq(0,1, by = 0.05), 
                 main = paste("SPI scores in", year),
                 xlab = "SPI score", ylab = "Number of species",
-                xlim = c(0, 0.4))
+                ylim = c(0,400), xlim = c(0, 1))
         }
     }   
     suppressWarnings(par(old_par) )
@@ -116,7 +121,7 @@ plot_SPI_by_group <- function() {
     par(mfrow = c(2,4))
 
     # Plot all species
-    plot_SPI_time_series(main = "All species")
+    plot_SPI_time_series(main = "Toutes les espèces")
 
     # Plot species by group
     for (i in seq_along(groups)) {
@@ -128,7 +133,7 @@ plot_SPI_by_group <- function() {
         plot(sub$YEAR[sub$SPECIES == sub_sp[1]], sub$SPI[sub$SPECIES == sub_sp[1]],
             ylim = c(0,1), xlim = c(1880, 2025),
             type='l', col='lightgrey',
-            xlab='Year', ylab='SPI',
+            xlab='Année', ylab='SPI',
             main = groups[i])
         for (sp in sub_sp) {
             lines(sub$YEAR[sub$SPECIES == sp], sub$SPI[sub$SPECIES == sp], type='l', col='lightgrey')
@@ -230,11 +235,12 @@ plot_protected_area <- function() {
     
     dat <- dat[order(dat$annee),]
     dat$area_cum <- cumsum(area)
-    names(dat) <- c("annee", "area", "area_cum")
+    dat$area_prop <- dat$area_cum / 166800000
+    names(dat) <- c("annee", "area", "area_cum", "area_prop")
     
 
-    plot(dat$annee, dat$area_cum, col = "black",
-        xlab = "Year", ylab = "Area (Ha)", main = "Protected area in Quebec")
+    plot(dat$annee, dat$area_prop, col = "black",
+        xlab = "Année", ylab = "Proportion du territoire protégé", main = "Territoire portégé au Québec")
 }
 
 
@@ -272,7 +278,7 @@ plot_SPI_regions <- function(SPI, ...) {
 
     plot(SPI$YEAR[SPI$SPECIES == names[1]], SPI$SPI[SPI$SPECIES == names[1]], ylim = c(0,0.7),
         type='l', col='lightgrey',
-        xlab='Year', ylab='SPI', ...)
+        xlab='Année', ylab='SPI', ...)
     for (i in names[-1]) {
         lines(SPI$YEAR[SPI$SPECIES == i], SPI$SPI[SPI$SPECIES == i], type='l', col='lightgrey')
     }
@@ -289,4 +295,95 @@ plot_SPI_regions <- function(SPI, ...) {
     lines(years, year_mean, type='l', col='black', lwd=2)
     ## Linear regression
     lm(SPI$SPI ~ SPI$YEAR) |> abline(lwd=2, col='red', lty=2)
+}
+
+
+###############################################################################
+# Plot SPI by classes of number of occurences per species
+#
+# Arguments:
+#
+# Author: Victor Cameron
+# Date: 2023-12-20
+###############################################################################
+plot_SPI_by_occurences <- function() {
+    # Load libraries
+    library(ggplot2)
+    library(dplyr)
+    library(sf)
+
+    # Load data
+    SPI <- read.csv("results/SPI.csv")
+    occurences <- st_read("data_raw/emvs_dq.gpkg", quiet = TRUE)
+    species <- unique(occurences$SNAME)
+
+    # Remove "information masquée"
+    if("Information masquée" %in% SPI$SPECIES) {
+        SPI <- SPI[SPI$SPECIES != "Information masquée",]
+    }
+    if("Information masquée" %in% occurences$SNAME) {
+        occurences <- occurences[occurences$SNAME != "Information masquée",]
+    }
+
+    # Compute the number of occurences per species
+    occ_class <- occurences |>
+        st_drop_geometry() |>
+        group_by(SNAME) |>
+        summarise(n = n()) |>
+        mutate(occurence_class = case_when(
+            n == 1 ~ "1",
+            n > 1 & n <= 10 ~ "2-10",
+            n > 10 & n <= 100 ~ "11-100",
+            n > 100 ~ ">100")) |>
+        # group_by(occurence_class) |>
+        # summarise(n = n()) |>
+        mutate(occurence_class = factor(occurence_class, levels = c("1", "2-10", "11-100", ">100"))) 
+        # ggplot(aes(x = occurence_class, y = n)) +
+        # geom_bar(stat = "identity") +
+        # labs(x = "Number of occurences", y = "Number of species") +
+        # theme_bw() +
+        # theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+    old_par <- par()
+    par(mfrow = c(2,3))
+
+    # Plot all species
+    plot_SPI_time_series(main = "Toutes les espèces")
+
+    # Plot species by group
+    groups <- unique(occ_class$occurence_class) |> sort()
+    for (i in seq_along(groups)) {
+        sub_sp <- occ_class$SNAME[occ_class$occurence_class == groups[i]] |> unique()
+        sub <- SPI[SPI$SPECIES %in% sub_sp,] 
+
+        # Plot first line
+        plot(sub$YEAR[sub$SPECIES == sub_sp[1]], sub$SPI[sub$SPECIES == sub_sp[1]],
+            ylim = c(0,1), xlim = c(1880, 2025),
+            type='l', col='lightgrey',
+            xlab='Année', ylab='SPI',
+            main = paste("Espèces avec", as.character(groups[i]), "occurence(s)"))
+        for (sp in sub_sp) {
+            lines(sub$YEAR[sub$SPECIES == sp], sub$SPI[sub$SPECIES == sp], type='l', col='lightgrey')
+        }
+
+        # Add lines for each species
+        years <- unique(sub$YEAR) |> sort()
+        year_mean <- c()
+        for (i in years) {
+            sub_year <- sub$SPI[sub$YEAR == i]
+            year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
+        }
+
+        # Add a treandline
+        ## Mean
+        lines(years, year_mean, type='l', col='black', lwd=2)
+        ## Linear regression
+        lm(sub$SPI ~ sub$YEAR) |> abline(lwd=2, col='red', lty=2)
+    }
+
+    # Plot protected area
+    plot_protected_area()
+
+    suppressWarnings(par(old_par))
 }
