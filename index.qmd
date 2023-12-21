@@ -143,7 +143,7 @@ Avec une moyenne de 11% pour les 225 espèces considérées
 
 :::{.panel-tabset}
 
-## aire distribution
+## aires distribution
 ```{r, echo=F, warnings=F}
 #| label: fig-spi_distri
 #| fig-cap: "Valeur moyenne et par espèce de l'indice de protection des espèces à partir des aires de distribution des espèces (n = 225). La courbe bleue représente le SPI moyen, les courbes verte et pourpre représentent les espèces la moins et la plus protégée, respectivement."
@@ -243,7 +243,7 @@ Les espèces du Sud présentent un SPI moyen 9% (sd = 8%).
 
 :::{.panel-tabset}
 
-## aire distribution
+## aires distribution
 ```{r, echo=F, warning = FALSE}
 #| label: fig-spi_2023
 #| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'aires de distribution."
