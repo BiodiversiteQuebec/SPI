@@ -20,6 +20,13 @@ source("scr/03-data_n_figures_for_quarto.r")
 
 last_spi <- read.csv2("data_clean/SPI_north_south.csv")
 
+last_spi_occ <- sspi_df_occ[sspi_df_occ$YEAR == 2023, ]
+last_spi_occ$SPI2 <- round(last_spi_occ$SPI, digits = 3)
+
+# colors
+col_pal <- c("#440154FF", "#39568CFF", "#1F968BFF", "#73D055FF")
+
+
 # Output figure in HTML5
 # if (knitr::is_html_output()) {
 #     knitr::knit_hooks$set(
@@ -54,7 +61,6 @@ Superficie totale protégée = 28 060 703 ha
 #         # , burst = T
 #         )
 # col_pal <- viridis(4, direction = -1)
-col_pal <- c("#440154FF", "#39568CFF", "#1F968BFF", "#73D055FF")
 m <- leaflet(aires_latlon) |>
     addTiles() |>
     addPolygons(
@@ -137,7 +143,7 @@ Avec une moyenne de 11% pour les 225 espèces considérées
 
 :::{.panel-tabset}
 
-## SPI - aire distribution
+## aire distribution
 ```{r, echo=F, warnings=F}
 #| label: fig-spi_distri
 #| fig-cap: "Valeur moyenne et par espèce de l'indice de protection des espèces à partir des aires de distribution des espèces (n = 225). La courbe bleue représente le SPI moyen, les courbes verte et pourpre représentent les espèces la moins et la plus protégée, respectivement."
@@ -181,7 +187,7 @@ g |> layout(
 print(g)
 ```
 
-## SPI - occurrences
+## occurrences
 
 ```{r, echo=F, warnings=F}
 #| label: fig-spi_occur
@@ -235,26 +241,16 @@ Regarder autour des années 1981 et 2003 qui correspondent à une augmentation i
 Les espèces du Nord présentent un SPI moyen de 17% (sd = 4%).  
 Les espèces du Sud présentent un SPI moyen 9% (sd = 8%).  
 
+:::{.panel-tabset}
+
+## aire distribution
 ```{r, echo=F, warning = FALSE}
 #| label: fig-spi_2023
-#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023."
+#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'aires de distribution."
 #| warning: false
 
 # conversion from species characters to ordered levels of factor for keeping increasing SPI
 last_spi$SPECIES2 <- factor(last_spi$SPECIES, levels = last_spi$SPECIES[order(last_spi$SPI, decreasing = FALSE)])
-
-# fonction for drawing a vertical line
-vline <- function(x = 0, color = "#238A8DFF") {
-    list(
-        type = "line",
-        y0 = 0,
-        y1 = 1,
-        yref = "paper",
-        x0 = x,
-        x1 = x,
-        line = list(color = color, dash = "dot")
-    )
-}
 
 fig <- plot_ly() |>
     add_bars(
@@ -279,6 +275,41 @@ fig <- plot_ly() |>
 fig
 ```
 
+## occurrences
+```{r, echo=F, warning = FALSE}
+#| label: fig-spi_occ_2023
+#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'occurrences."
+#| warning: false
+
+# conversion from species characters to ordered levels of factor for keeping increasing SPI
+last_spi_occ$SPECIES2 <- factor(last_spi_occ$SPECIES, levels = last_spi_occ$SPECIES[order(last_spi_occ$SPI, decreasing = FALSE)])
+
+fig <- plot_ly() |>
+    add_trace(
+        data = last_spi_occ,
+        x = ~SPI2,
+        y = ~SPECIES2,
+        name = "", # remove the "trace 0 " in the popup
+        type = "bar",
+        orientation = "h",
+        color = I(col_pal[3]),
+        marker = list(
+            line = list(color = "white",
+                        width = 0.2)),
+        hovertemplate = paste(
+            "<b>%{y}</b><br>",
+            "<b>SPI</b> = %{x}"
+        )
+    ) |>
+    layout(
+        yaxis = list(zeroline = FALSE, title = "Espèce", showticklabels = FALSE),
+        xaxis = list(zeroline = FALSE),
+        shapes = list(vline(0.17, color = "black"))
+    )
+# print(fig)
+fig
+```
+:::
 
 ## **Identification d'espèces extrêmes en terme de protection**  
 cf la Salamandre sombre des montagnes et la Rainette faux grillon
