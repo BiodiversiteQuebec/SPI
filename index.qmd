@@ -18,7 +18,7 @@ source("scr/03-data_n_figures_for_quarto.r")
 # --- last SPI - distribution
 # ----------------------------
 
-last_spi <- read.csv2("data_clean/SPI_north_south.csv")
+# last_spi <- read.csv2("data_clean/SPI_north_south.csv")
 
 last_spi_occ <- sspi_df_occ[sspi_df_occ$YEAR == 2023, ]
 last_spi_occ$SPI2 <- round(last_spi_occ$SPI, digits = 3)
@@ -250,17 +250,19 @@ Les espèces du Sud présentent un SPI moyen 9% (sd = 8%).
 #| warning: false
 
 # conversion from species characters to ordered levels of factor for keeping increasing SPI
-last_spi$SPECIES2 <- factor(last_spi$SPECIES, levels = last_spi$SPECIES[order(last_spi$SPI, decreasing = FALSE)])
+# last_spi$SPECIES2 <- factor(last_spi$SPECIES, levels = last_spi$SPECIES[order(last_spi$SPI, decreasing = FALSE)])
+last_spi$vernacular_fr2 <- factor(last_spi$vernacular_fr, levels = last_spi$vernacular_fr[order(last_spi$SPI, decreasing = FALSE)])
+
 
 fig <- plot_ly() |>
     add_bars(
         data = last_spi,
         x = ~SPI,
-        y = ~SPECIES2,
+        y = ~vernacular_fr2,
         type = "bar",
         orientation = "h",
-        color = ~LOC,
-        # colors = pal2,
+        color = ~group_fr,
+        colors = col_pal,
         hovertemplate = paste(
             "<b>%{y}</b><br>",
             "<b>SPI</b> = %{x}"

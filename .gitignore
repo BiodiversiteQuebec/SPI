@@ -5,6 +5,9 @@ data_clean/aires_union.gpkg
 
 data_raw/*
 
+# images
+images/
+
 # gh-page
 /.quarto/
 *.html
