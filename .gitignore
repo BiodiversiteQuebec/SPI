@@ -16,4 +16,5 @@ index_files
 
 # renv
 .Rprofile
+.Rhistory
 renv/
