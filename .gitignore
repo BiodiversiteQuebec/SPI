@@ -3,7 +3,8 @@ data_clean/aires_repartition.gpkg
 data_clean/aires_protegees_union.gpkg
 data_clean/aires_union.gpkg
 
-data_raw/*
+data_raw/emvs_dq.gpkg
+data_raw/registre_aires_prot.gpkg
 
 # images
 images/
@@ -16,4 +17,5 @@ index_files
 
 # renv
 .Rprofile
+.Rhistory
 renv/

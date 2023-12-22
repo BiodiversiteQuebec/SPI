@@ -18,8 +18,6 @@ source("scr/03-data_n_figures_for_quarto.r")
 # --- last SPI - distribution
 # ----------------------------
 
-# last_spi <- read.csv2("data_clean/SPI_north_south.csv")
-
 last_spi_occ <- sspi_df_occ[sspi_df_occ$YEAR == 2023, ]
 last_spi_occ$SPI2 <- round(last_spi_occ$SPI, digits = 3)
 
@@ -245,24 +243,23 @@ Les espèces du Sud présentent un SPI moyen 9% (sd = 8%).
 
 ## aires distribution
 ```{r, echo=F, warning = FALSE}
-#| label: fig-spi_2023
-#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'aires de distribution."
+#| label: fig-spi_2023_NordSud
+#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'aires de distribution, groupé par espèce du Nord vs. du Sud."
 #| warning: false
 
 # conversion from species characters to ordered levels of factor for keeping increasing SPI
-# last_spi$SPECIES2 <- factor(last_spi$SPECIES, levels = last_spi$SPECIES[order(last_spi$SPI, decreasing = FALSE)])
-last_spi$vernacular_fr2 <- factor(last_spi$vernacular_fr, levels = last_spi$vernacular_fr[order(last_spi$SPI, decreasing = FALSE)])
+last_spi_NS$vernacular_fr2 <- factor(last_spi_NS$vernacular_fr, levels = last_spi_NS$vernacular_fr[order(last_spi_NS$SPI, decreasing = FALSE)])
 
 
 fig <- plot_ly() |>
     add_bars(
-        data = last_spi,
+        data = last_spi_NS,
         x = ~SPI,
         y = ~vernacular_fr2,
         type = "bar",
         orientation = "h",
-        color = ~group_fr,
-        colors = col_pal,
+        color = ~LOC,
+        colors = col_pal[c(2, 3)],
         hovertemplate = paste(
             "<b>%{y}</b><br>",
             "<b>SPI</b> = %{x}"
@@ -280,7 +277,7 @@ fig
 ## occurrences
 ```{r, echo=F, warning = FALSE}
 #| label: fig-spi_occ_2023
-#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'occurrences."
+#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'occurrences, groupé par groupe taxonomique."
 #| warning: false
 
 # conversion from species characters to ordered levels of factor for keeping increasing SPI
@@ -312,6 +309,40 @@ fig <- plot_ly() |>
 fig
 ```
 :::
+
+## **Etat de la protection des espèces du nord vs. du Sud**  
+
+```{r, echo=F, warning = FALSE}
+#| label: fig-spi_2023_groupe_taxo
+#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'aires de distribution."
+#| warning: false
+
+# conversion from vernacular_fr characters to ordered levels of factor for keeping increasing SPI
+last_spi$vernacular_fr2 <- factor(last_spi$vernacular_fr, levels = last_spi$vernacular_fr[order(last_spi$SPI, decreasing = FALSE)])
+
+
+fig <- plot_ly() |>
+    add_bars(
+        data = last_spi,
+        x = ~SPI,
+        y = ~vernacular_fr2,
+        type = "bar",
+        orientation = "h",
+        color = ~group_fr,
+        colors = col_pal,
+        hovertemplate = paste(
+            "<b>%{y}</b><br>",
+            "<b>SPI</b> = %{x}"
+        )
+    ) |>
+    layout(
+        yaxis = list(zeroline = FALSE, title = "Espèce", showticklabels = FALSE),
+        xaxis = list(zeroline = FALSE),
+        shapes = list(vline(0.17, color = "black"))
+    )
+# print(fig)
+fig
+```
 
 ## **Identification d'espèces extrêmes en terme de protection**  
 cf la Salamandre sombre des montagnes et la Rainette faux grillon

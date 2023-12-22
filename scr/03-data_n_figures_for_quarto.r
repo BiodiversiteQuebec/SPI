@@ -62,10 +62,7 @@ years <- as.numeric(unique(SPI$YEAR))
 
 # info_spe2 <- do.call("rbind", infos)
 # write.csv(info_spe2, "data_clean/ATLAS_info_spe_distri.csv")
-info_spe2 <- read.csv("data_clean/ATLAS_info_spe_distri.csv")[,-1]
-# Complete the empty values
-spe_NA <- read.csv("data_raw/spe_infos_supp.csv")
-info_spe2 <- rbind(info_spe2, spe_NA)
+info_spe2 <- read.csv("data_clean/ATLAS_info_spe_distri.csv")[,-1] 
 
 # smoothing the curves
 spi_ls <- split(SPI, SPI$SPECIES)
@@ -195,10 +192,27 @@ sspi_df_occ$GROUPE[sspi_df_occ$SPECIES == max_spe] <- "max"
 sspi_df_occ$GROUPE[sspi_df_occ$SPECIES %in% min_spe] <- "min"
 sspi_df_occ$GROUPE[is.na(sspi_df_occ$GROUPE)] <- "other"
 
+# --------------------------------------------------------- #
+#### figure46 - barchat SPI 2023 par groupe Nord vs Sud ####
+# ------------------------------------------------------- #
+last_spi_NS <- read.csv2("data_clean/SPI_north_south.csv")[, -1]
+last_spi_NS <- left_join(last_spi_NS, info_spe2, by = join_by("SPECIES" == "observed_scientific_name"))
 # ---------------------------------------------------------- #
-#### figure 3A - barchat SPI 2023 par groupe taxonomique ####
+#### figure 6 - barchat SPI 2023 par groupe taxonomique ####
 # -------------------------------------------------------- #
 # select data
 last_spi <- SPI[SPI$YEAR == 2023,]
 # fill informations about species
 last_spi <- left_join(last_spi, info_spe2, by = join_by("SPECIES" == "observed_scientific_name"))
+
+
+
+
+
+
+
+
+# retrieve species vernaculatfrench names from CDPNQ
+
+# ratlas::get_function_data('taxa_vernacular_from_match', observed_scientific_name = 'Gulo gulo')
+# ratlas::db_call_function('taxa_vernacular_from_match', observed_scientific_name = 'Gulo gulo')
