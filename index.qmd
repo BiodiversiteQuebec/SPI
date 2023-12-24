@@ -244,7 +244,7 @@ Les espèces du Sud présentent un SPI moyen 9% (sd = 8%).
 ## aires distribution
 ```{r, echo=F, warning = FALSE}
 #| label: fig-spi_2023_NordSud
-#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'aires de distribution, groupé par espèce du Nord vs. du Sud."
+#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'aires de distribution (n = 225), groupé par espèce du Nord vs. du Sud."
 #| warning: false
 
 # conversion from species characters to ordered levels of factor for keeping increasing SPI
@@ -277,7 +277,7 @@ fig
 ## occurrences
 ```{r, echo=F, warning = FALSE}
 #| label: fig-spi_occ_2023
-#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'occurrences, groupé par groupe taxonomique."
+#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'occurrences (n = 503)."
 #| warning: false
 
 # conversion from species characters to ordered levels of factor for keeping increasing SPI
@@ -310,11 +310,11 @@ fig
 ```
 :::
 
-## **Etat de la protection des espèces du nord vs. du Sud**  
+## **Etat de la protection des espèces par groupe taxonomique**  
 
 ```{r, echo=F, warning = FALSE}
 #| label: fig-spi_2023_groupe_taxo
-#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'aires de distribution."
+#| fig-cap: "Valeur de l'indicateur de protection des espèces en 2023, à partir des données d'aires de distribution (n = 225), organisé par groupe taxonomique."
 #| warning: false
 
 # conversion from vernacular_fr characters to ordered levels of factor for keeping increasing SPI
