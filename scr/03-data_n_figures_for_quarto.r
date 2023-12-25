@@ -214,7 +214,7 @@ last_spi_NS <- left_join(last_spi_NS, info_spe2, by = join_by("SPECIES" == "obse
 # select data
 last_spi <- SPI[SPI$YEAR == 2023, ]
 # fill informations about species
-last_spi <- left_join(last_spi, info_spe2, by = join_by("SPECIES" == "observed_scientific_name"))
+# last_spi <- left_join(last_spi, info_spe2, by = join_by("SPECIES" == "observed_scientific_name"))
 
 
 
