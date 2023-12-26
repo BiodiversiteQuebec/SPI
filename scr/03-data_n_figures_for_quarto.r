@@ -195,11 +195,11 @@ sspi_df_occ <- rbind(sspi_df_occ, df)
 # Association d'un groupe par catégories - max, min & mean
 spi2023 <- SOCC[SOCC$YEAR == 2023, ]
 range(spi2023$SPI)
-max_spe <- spi2023$SPECIES[spi2023$SPI == max(spi2023$SPI)]
+max_spe <- spi2023$SPECIES[spi2023$SPI > 0.999]
 min_spe <- spi2023$SPECIES[spi2023$SPI == min(spi2023$SPI)]
 
 sspi_df_occ$GROUPE[sspi_df_occ$SPECIES == "Valeur moyenne"] <- "mean"
-sspi_df_occ$GROUPE[sspi_df_occ$SPECIES == max_spe] <- "max"
+sspi_df_occ$GROUPE[sspi_df_occ$SPECIES %in% max_spe] <- "max"
 sspi_df_occ$GROUPE[sspi_df_occ$SPECIES %in% min_spe] <- "min"
 sspi_df_occ$GROUPE[is.na(sspi_df_occ$GROUPE)] <- "other"
 
