@@ -1,9 +1,15 @@
 # data 
-data_clean/aires_repartition.gpkg
-data_clean/aires_protegees_union.gpkg
-data_clean/aires_union.gpkg
-
+data_clean/*
 data_raw/*
+
+# results
+results/*
+## keep combined results
+!results/spi_ranges.csv
+!results/spi_occ.csv
+!results/spi_inla.csv
+## Keep all plots
+!results/figures/*
 
 # gh-page
 /.quarto/

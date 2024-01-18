@@ -2,8 +2,8 @@
 
 #SBATCH --array=1-225
 #SBATCH --account=def-dgravel
-#SBATCH -t 00:60:00
-#SBATCH --mem=5120
+#SBATCH -t 03:00:00
+#SBATCH --mem=10240
 #SBATCH --job-name=SPI
 #SBATCH --mail-user=victor.cameron@usherbrooke.ca
 #SBATCH --mail-type=ALL

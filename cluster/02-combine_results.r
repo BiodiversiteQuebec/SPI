@@ -3,6 +3,8 @@
 # Get all file names from /result folder
 files <- list.files("results", pattern = "*.csv", full.names = TRUE)
 files <- files[files != "results/SPI.csv"]
+files <- files[files != "results/SPI_OCC.csv"]
+files <- files[files != "results/SPI_ranges.csv"]
 sp_names <- sub(".*/(.*)(\\_SPI.csv)", "\\1", files)
 sp_names <- sub("_", " ", sp_names)
 # First letter to uppercase
@@ -28,5 +30,5 @@ rownames(SPI) <- sp_names
 
 
 # Save SPI to results directory
-saveRDS(SPI, "results/SPI.rds")
-write.csv(SPI, "results/SPI.csv", row.names = TRUE)
+# saveRDS(SPI, "results/SPI_ranges.rds")
+write.csv(SPI, "results/SPI_ranges.csv", row.names = TRUE)
