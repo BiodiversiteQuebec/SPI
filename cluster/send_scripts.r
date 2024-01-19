@@ -17,7 +17,8 @@ dirDataRaw <- paste(grep('.', paste0('data_raw/', dir('data_raw/')), value=TRUE,
 system(paste0('scp ', dirDataRaw, ' vcameron@beluga.alliancecan.ca:projects/def-dgravel/vcameron/SPI/data_raw'))
 
 # Files in data/range_maps folder
-dirDataClean <- paste(grep('.', paste0('data_clean/', dir('data_clean/')), value=TRUE, fixed=TRUE), collapse=' ')
+# dirDataClean <- paste(grep('.', paste0('data_clean/', dir('data_clean/')), value=TRUE, fixed=TRUE), collapse=' ')
+dirDataClean <- paste(c("data_clean/aires_union.gpkg", "data_clean/aires_protegees_nord.gpkg", "data_clean/aires_protegees_sud.gpkg", "data_clean/aires_repartition.gpkg", "data_clean/aires_repartition_sud.gpkg", "data_clean/aires_repartition_nord.gpkg"), collapse=' ')
 system(paste0('scp ', dirDataClean, ' vcameron@beluga.alliancecan.ca:projects/def-dgravel/vcameron/SPI/data_clean'))
 
 # File in scr folder
