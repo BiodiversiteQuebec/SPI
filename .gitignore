@@ -3,13 +3,13 @@ data_clean/*
 data_raw/*
 
 # results
-results/*
+results/*.RDS
+results/*.rds
+results/*.csv
 ## keep combined results
-!results/spi_ranges.csv
+!results/SPI_ranges.csv
 !results/spi_occ.csv
 !results/spi_inla.csv
-## Keep all plots
-!results/figures/*
 
 # gh-page
 /.quarto/
