@@ -13,11 +13,13 @@ dirData <- paste(grep('.', paste0('data/', dir('data/')), value=TRUE, fixed=TRUE
 system(paste0('scp ', dirData, ' vcameron@beluga.alliancecan.ca:projects/def-dgravel/vcameron/SPI/data'))
 
 # Files in data_raw/range_maps folder
-dirDataRaw <- paste(grep('.', paste0('data_raw/', dir('data_raw/')), value=TRUE, fixed=TRUE), collapse=' ')
+# dirDataRaw <- paste(grep('.', paste0('data_raw/', dir('data_raw/')), value=TRUE, fixed=TRUE), collapse=' ')
+dirDataRaw <- paste(c("data_raw/emvs_dq.gpkg"), collapse=' ')
 system(paste0('scp ', dirDataRaw, ' vcameron@beluga.alliancecan.ca:projects/def-dgravel/vcameron/SPI/data_raw'))
 
 # Files in data/range_maps folder
-dirDataClean <- paste(grep('.', paste0('data_clean/', dir('data_clean/')), value=TRUE, fixed=TRUE), collapse=' ')
+# dirDataClean <- paste(grep('.', paste0('data_clean/', dir('data_clean/')), value=TRUE, fixed=TRUE), collapse=' ')
+dirDataClean <- paste(c("data_clean/aires_union.gpkg", "data_clean/aires_protegees_nord.gpkg", "data_clean/aires_protegees_sud.gpkg", "data_clean/emvs_dq_s.gpkg", "data_clean/emvs_dq_n.gpkg"), collapse=' ')
 system(paste0('scp ', dirDataClean, ' vcameron@beluga.alliancecan.ca:projects/def-dgravel/vcameron/SPI/data_clean'))
 
 # File in scr folder

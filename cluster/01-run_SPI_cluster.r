@@ -9,6 +9,7 @@ ARRAY_ID <- as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 # 0. PARAMS
 #------------------------------------------------------------------------------
 PROTECTED_AREA_TYPE = "" # Types of protected areas to consider (unique(aires_prot$DESIG_GR))
+SPLIT = TRUE # Split computations into total, south and north regions
 UNION = TRUE # Union of protected areas ?
 YEARS_LIST <- c(1876, 1900, 1919, 1925, 1927, 1931, 1937, 1938, 1941, 1955, 1960, 1970, 1972, 1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023)
 SPECIES_LIST <- c("Acipenser fulvescens", "Acipenser oxyrinchus", "Agastache nepetoides", 
@@ -195,7 +196,7 @@ sp_name <- SPECIES_LIST[ARRAY_ID]
 #------------------------------------------------------------------------------
 # 2. Compute SPI
 #------------------------------------------------------------------------------
-SPI <- run_SPI_computation(sp_name, YEARS_LIST, PROTECTED_AREA_TYPE, UNION)
+SPI <- run_SPI_computation(sp_name, YEARS_LIST, SPLIT = TRUE, PROTECTED_AREA_TYPE, UNION)
 
 
 #------------------------------------------------------------------------------
