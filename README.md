@@ -50,7 +50,7 @@ dev.off()
 
 All data needed for the analyses are available in the `data` folder.
 
-As an initial proof of concept, the indicator is computed for the 1992-2018 period from whole range maps. These range maps were produced by Vencent Bellavance from occurence data from [Biodiversité Québec](https://biodiversite-quebec.ca/). The range maps are available in the `data` folder where each `.tif` file is named after a species and contains 26 layers, one for every year between 1992 and 2018. 
+As an initial proof of concept, the indicator is computed for the 1992-2017 period from whole range maps. These range maps were produced by Vencent Bellavance from occurence data from [Biodiversité Québec](https://biodiversite-quebec.ca/). The range maps are available in the `data` folder where each `.tif` file is named after a species and contains 26 layers, one for every year between 1992 and 2017. 
 
 The protected areas are from the données ouvertes portal of the gouvernement du Québec and are also available in the `data` folder. Only the 'Aires protégées du registre' layer was used and **no distinction is made between the different types of protected areas** . The dataset was downloaded on 31-08-2023.
 
