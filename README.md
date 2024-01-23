@@ -32,6 +32,18 @@ plot_SPI_time_series() # Time series of SPI values by species
 plot_SPI_scores(year = 2000) # Histogram of SPI scores for a given year
 plot_SPI_by_group() # Time series of SPI values devided by species groups
 plot_SPI_at_risk() # Time series of SPI values for species at risk
+
+# png("results/figures/INLA_SPI_by_group.png", width = 3000, height = 2000, res = 300, bg = "transparent")
+# plot_SPI_by_group()
+# dev.off()
+
+png("results/figures/INLA_SPI_scores.png", width = 3000, height = 2000, res = 300, bg = "transparent")
+plot_SPI_scores()
+dev.off()
+
+png("results/figures/INLA_SPI_time_series.png", width = 3000, height = 2000, res = 300, bg = "transparent")
+plot_SPI_time_series()
+dev.off()
 ```
 
 ## Data

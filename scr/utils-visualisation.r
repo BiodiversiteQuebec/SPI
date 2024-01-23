@@ -144,12 +144,12 @@ plot_SPI_by_group <- function() {
         which_rows <- which(rownames(SPI) %in% groups[!is.na(groups[,groups_of_interest[i]]),"species"])
         sub <- SPI[which_rows,] 
 
-        plot(years, sub[1,], ylim = c(0,0.2),
+        plot(names(sub[1,]), sub[1,], ylim = c(0,0.2),
         type='l', col='lightgrey',
         xlab='Year', ylab='SPI',
         main = names(groups_of_interest)[i])
         for (i in 2:dim(sub)[1]) {
-            lines(years, sub[i,], type='l', col='lightgrey')
+            lines(names(sub[1,]), sub[i,], type='l', col='lightgrey')
         }
 
             # Stransform the data to a long format
@@ -159,7 +159,7 @@ plot_SPI_by_group <- function() {
 
             # Add a treandline
             ## Mean
-            lines(years, colMeans(sub, na.rm = TRUE), type='l', col='black', lwd=2)
+            lines(names(sub), colMeans(sub, na.rm = TRUE), type='l', col='black', lwd=2)
             ## Linear regression
             lm(sub_long$SPI ~ sub_long$year) |> abline(lwd=2, col='red', lty=2)
     }
