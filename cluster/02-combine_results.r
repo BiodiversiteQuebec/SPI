@@ -22,4 +22,4 @@ SPI <- res[,-1]
 
 # Save SPI to results directory
 # saveRDS(SPI, "results/SPI_occ.rds")
-write.csv(SPI, "results/SPI_occ.csv", row.names = FALSE)
+write.csv(SPI, "results/SPI_OCC.csv", row.names = FALSE)
