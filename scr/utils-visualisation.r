@@ -32,7 +32,7 @@ plot_range_map <- function(range_map, base_map = NULL) {
 ###############################################################################
 
 plot_SPI_time_series <- function(...) {
-    SPI <- read.csv("results/SPI.csv")
+    SPI <- read.csv("results/SPI_OCC.csv")
 
     names <- as.character(unique(SPI$SPECIES))
     years <- as.numeric(unique(SPI$YEAR))
@@ -77,7 +77,7 @@ plot_SPI_time_series <- function(...) {
 ###############################################################################
 
 plot_SPI_scores <- function() {
-    SPI <- read.csv("results/SPI.csv")[,-1]
+    SPI <- read.csv("results/SPI_OCC.csv")[,-1]
 
     years <- as.numeric(unique(SPI$YEAR)) |> sort()
     
@@ -113,7 +113,7 @@ plot_SPI_scores <- function() {
 
 plot_SPI_by_group <- function() {
     library(sf)
-    SPI <- read.csv("results/SPI.csv")
+    SPI <- read.csv("results/SPI_OCC.csv")
     occurences <- st_read("data_raw/emvs_dq.gpkg", quiet = TRUE)
     groups <- unique(occurences$GGROUPE)
 
@@ -151,7 +151,7 @@ plot_SPI_by_group <- function() {
         ## Mean
         lines(years, year_mean, type='l', col='black', lwd=2)
         ## Linear regression
-        lm(sub$SPI ~ sub$YEAR) |> abline(lwd=2, col='red', lty=2)
+        if (length(sub$SPI) > 0)lm(sub$SPI ~ sub$YEAR) |> abline(lwd=2, col='red', lty=2)
     }
 
     # Plot protected area
@@ -176,7 +176,7 @@ plot_SPI_at_risk <- function() {
     cdpnq_list <- c("Aquila chrysaetos", "Centronyx henslowii", "Falco peregrinus", "Melanerpes erythrocephalus", "Lanius ludovicianus")
 
     # Read the data
-    SPI <- read.csv("results/SPI.csv")
+    SPI <- read.csv("results/SPI_OCC.csv")
     rownames(SPI) <- SPI[,1]
     SPI <- SPI[,-1]
 
@@ -257,44 +257,56 @@ plot_protected_area <- function() {
 ###############################################################################
 plot_SPI_regions <- function(SPI, ...) {
 
-    aires_prot <- suppressWarnings(st_read("data_raw/registre_aires_prot.gpkg", layer = "AP_REG_S", quiet = TRUE))
-    range_maps <- st_read("data_clean/aires_repartition.gpkg", quiet = TRUE)
-    SPI <- read.csv("results/SPI.csv")[,-1]
-
-    # Which areas are in the north and south of the country?
-    # We use the latitude of the center of the area to determine this. Then convert to degrees
-    st_centroid(range_maps[1,]) |> st_coordinates() 
-    centroid <- range_maps |> st_transform(4326) |> st_make_valid() |> st_centroid() |> st_coordinates() 
-    southern_range <- which(centroid[,2] <= 50)
-    southern_sp <- range_maps[southern_range,] |> st_drop_geometry() |> dplyr::select(NOM_SCIENT) |> unique() |> unlist()
-    northern_range <- which(centroid[,2] > 50)
-    northern_sp <- range_maps[northern_range,] |> st_drop_geometry() |> dplyr::select(NOM_SCIENT) |> unique() |> unlist()
-    # Isolate the two first characters of the LATDMS column
-    southern_aires <- which(substr(aires_prot$LATDMS, 1, 2) <= 50)
-    northern_aires <- which(substr(aires_prot$LATDMS, 1, 2) > 50)
+    # aires_prot <- suppressWarnings(st_read("data_raw/registre_aires_prot.gpkg", layer = "AP_REG_S", quiet = TRUE))
+    # range_maps <- st_read("data_clean/aires_repartition.gpkg", quiet = TRUE)
+    SPI <- read.csv("results/SPI_OCC.csv")[,-1]
 
     names <- as.character(unique(SPI$SPECIES))
     years <- as.numeric(unique(SPI$YEAR)) |> sort()
 
-    plot(SPI$YEAR[SPI$SPECIES == names[1]], SPI$SPI[SPI$SPECIES == names[1]], ylim = c(0,0.7),
-        type='l', col='lightgrey',
-        xlab='Année', ylab='SPI', ...)
+    old_par <- par()
+    par(mfrow = c(1, 2))
+    # Plot Southern species
+    plot(SPI$YEAR[SPI$SPECIES == names[1]], SPI$SPI_SOUTH[SPI$SPECIES == names[1]],
+        ylim = c(0, 1),
+        type = "l", col = "lightgrey",
+        xlab = "Année", ylab = "SPI", main = "Territoire sous le 50e parallèle"
+    )
     for (i in names[-1]) {
-        lines(SPI$YEAR[SPI$SPECIES == i], SPI$SPI[SPI$SPECIES == i], type='l', col='lightgrey')
+        lines(SPI$YEAR[SPI$SPECIES == i], SPI$SPI_SOUTH[SPI$SPECIES == i], type = "l", col = "lightgrey")
     }
-
     # Transform the data to a long format
     year_mean <- c()
     for (i in years) {
         sub_year <- SPI$SPI[SPI$YEAR == i]
         year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
     }
-
     # Add a treandline
     ## Mean
-    lines(years, year_mean, type='l', col='black', lwd=2)
+    lines(years, year_mean, type = "l", col = "black", lwd = 2)
     ## Linear regression
-    lm(SPI$SPI ~ SPI$YEAR) |> abline(lwd=2, col='red', lty=2)
+    lm(SPI$SPI_SOUTH ~ SPI$YEAR) |> abline(lwd = 2, col = "red", lty = 2)
+
+    # Plot Northern species
+    plot(SPI$YEAR[SPI$SPECIES == names[1]], SPI$SPI_NORTH[SPI$SPECIES == names[1]],
+        ylim = c(0, 1),
+        type = "l", col = "lightgrey",
+        xlab = "Année", ylab = "SPI", main = "Territoire au delà du 50e parallèle"
+    )
+    for (i in names[-1]) {
+        lines(SPI$YEAR[SPI$SPECIES == i], SPI$SPI_NORTH[SPI$SPECIES == i], type = "l", col = "lightgrey")
+    }
+    # Transform the data to a long format
+    year_mean <- c()
+    for (i in years) {
+        sub_year <- SPI$SPI_NORTH[SPI$YEAR == i]
+        year_mean <- c(year_mean, mean(sub_year, na.rm = TRUE))
+    }
+    # Add a treandline
+    ## Mean
+    lines(years, year_mean, type = "l", col = "black", lwd = 2)
+    ## Linear regression
+    lm(SPI$SPI_NORTH ~ SPI$YEAR) |> abline(lwd = 2, col = "red", lty = 2)
 }
 
 
@@ -313,7 +325,7 @@ plot_SPI_by_occurences <- function() {
     library(sf)
 
     # Load data
-    SPI <- read.csv("results/SPI.csv")
+    SPI <- read.csv("results/SPI_OCC.csv")
     occurences <- st_read("data_raw/emvs_dq.gpkg", quiet = TRUE)
     species <- unique(occurences$SNAME)
 

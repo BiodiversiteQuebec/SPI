@@ -37,7 +37,7 @@ The dataframe will be saved as `results/SPI.csv`.
 ```r
 # View results
 source("scr/utils-visualisation.r")
-(SPI <- read.csv("results/SPI.csv"))
+(SPI <- read.csv("results/SPI_OCC.csv"))
 
 plot_SPI_time_series() # Time series of SPI values by species
 plot_SPI_scores() # Histogram of SPI scores for a given year
@@ -45,6 +45,23 @@ plot_SPI_by_group() # Time series of SPI values devided by species groups
 # plot_SPI_at_risk() # Time series of SPI values for species at risk
 plot_SPI_regions() # Time series of SPI values for south and north regions
 plot_SPI_by_occurences() # Time series of SPI values for species with different number of occurences
+
+# png("results/figures/OCC_SPI_regions.png", width = 3000, height = 2000, res = 300, bg = "transparent")
+# plot_SPI_regions()
+# dev.off()
+
+# png("results/figures/OCC_SPI_by_group.png", width = 3000, height = 2000, res = 300, bg = "transparent")
+# plot_SPI_by_group()
+# dev.off()
+
+# png("results/figures/OCC_SPI_scores.png", width = 3000, height = 2000, res = 300, bg = "transparent")
+# plot_SPI_scores()
+# dev.off()
+
+# png("results/figures/OCC_SPI_occurences.png", width = 3000, height = 2000, res = 300, bg = "transparent")
+# plot_SPI_by_occurences() # Time series of SPI values for species with different number of occurences
+# dev.off()
+
 ```
 
 ## Data
