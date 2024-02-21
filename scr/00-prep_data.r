@@ -50,7 +50,7 @@ ymin = 44
 xmax = -57
 ymax = 63
 ## Split latitude
-SPLIT = 50
+SPLIT = 55
 
 # Load data
 range_maps <- sf::st_read("./data_clean/aires_repartition.gpkg", quiet = TRUE)
