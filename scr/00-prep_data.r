@@ -21,7 +21,7 @@ ymin = 44
 xmax = -57
 ymax = 63
 ## Split latitude
-SPLIT = 50
+SPLIT = 55
 
 # Load occurences
 occurences <- st_read("data_raw/emvs_dq.gpkg", quiet = TRUE)
@@ -57,8 +57,8 @@ occurences_n <- occurences |>
 # occurences_n <- occurences[occurences$LATITUDE > SPLIT,]
 
 # Save occurences
-st_write(occurences_s, "data_clean/emvs_dq_s.gpkg", layer = "emvs_dq_s", quiet = TRUE)
-st_write(occurences_n, "data_clean/emvs_dq_n.gpkg", layer = "emvs_dq_n", quiet = TRUE)
+st_write(occurences_s, "data_clean/emvs_dq_s.gpkg", layer = "emvs_dq_s", quiet = TRUE, append=FALSE)
+st_write(occurences_n, "data_clean/emvs_dq_n.gpkg", layer = "emvs_dq_n", quiet = TRUE, append=FALSE)
 
 
 ##############################################################################
