@@ -259,7 +259,7 @@ plot_SPI_regions <- function(SPI, ...) {
 
     # aires_prot <- suppressWarnings(st_read("data_raw/registre_aires_prot.gpkg", layer = "AP_REG_S", quiet = TRUE))
     # range_maps <- st_read("data_clean/aires_repartition.gpkg", quiet = TRUE)
-    SPI <- read.csv("results/SPI_OCC.csv")[,-1]
+    SPI <- read.csv("results/SPI_OCC.csv")
 
     names <- as.character(unique(SPI$SPECIES))
     years <- as.numeric(unique(SPI$YEAR)) |> sort()
@@ -270,7 +270,7 @@ plot_SPI_regions <- function(SPI, ...) {
     plot(SPI$YEAR[SPI$SPECIES == names[1]], SPI$SPI_SOUTH[SPI$SPECIES == names[1]],
         ylim = c(0, 1),
         type = "l", col = "lightgrey",
-        xlab = "Année", ylab = "SPI", main = "Territoire sous le 50e parallèle"
+        xlab = "Année", ylab = "SPI", main = "Territoire sous le 55e parallèle"
     )
     for (i in names[-1]) {
         lines(SPI$YEAR[SPI$SPECIES == i], SPI$SPI_SOUTH[SPI$SPECIES == i], type = "l", col = "lightgrey")
@@ -291,7 +291,7 @@ plot_SPI_regions <- function(SPI, ...) {
     plot(SPI$YEAR[SPI$SPECIES == names[1]], SPI$SPI_NORTH[SPI$SPECIES == names[1]],
         ylim = c(0, 1),
         type = "l", col = "lightgrey",
-        xlab = "Année", ylab = "SPI", main = "Territoire au delà du 50e parallèle"
+        xlab = "Année", ylab = "SPI", main = "Territoire au delà du 55e parallèle"
     )
     for (i in names[-1]) {
         lines(SPI$YEAR[SPI$SPECIES == i], SPI$SPI_NORTH[SPI$SPECIES == i], type = "l", col = "lightgrey")

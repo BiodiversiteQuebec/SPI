@@ -39,6 +39,9 @@ The dataframe will be saved as `results/SPI.csv`.
 source("scr/utils-visualisation.r")
 (SPI <- read.csv("results/SPI_OCC.csv"))
 
+# Remove species with no name
+SPI <- SPI[SPI$SPECIES != "Information masquée",]
+
 plot_SPI_time_series() # Time series of SPI values by species
 plot_SPI_scores() # Histogram of SPI scores for a given year
 plot_SPI_by_group() # Time series of SPI values devided by species groups
