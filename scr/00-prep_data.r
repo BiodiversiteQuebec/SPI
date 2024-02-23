@@ -21,7 +21,7 @@ ymin = 44
 xmax = -57
 ymax = 63
 ## Split latitude
-SPLIT = 55
+SPLIT = 50
 
 # Load occurences
 occurences <- st_read("data_raw/emvs_dq.gpkg", quiet = TRUE)
