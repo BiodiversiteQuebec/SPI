@@ -37,7 +37,7 @@ The dataframe will be saved as `results/SPI.csv`.
 ```r
 # View results
 source("scr/utils-visualisation.r")
-(SPI <- read.csv("results/SPI_OCC.csv"))
+SPI <- read.csv("results/SPI_OCC.csv")
 
 # Remove species with no name
 SPI <- SPI[SPI$SPECIES != "Information masquée",]
