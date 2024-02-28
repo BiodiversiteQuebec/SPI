@@ -98,16 +98,24 @@ run_SPI_computation <- function(SPECIES, YEAR, SPLIT = FALSE, PROTECTED_AREA_TYP
 
         if (SPLIT){
             # South
-            aires_year_s <- aires_s[aires_s$year <= year,]
-            if (UNION) aires <- aires_year_s |> st_union() |> st_as_sf() |> suppressWarnings()
-            spi_year_s <- spi(occurences_s, aires)
-            spi_vect_s <- c(spi_vect_s, spi_year_s)
-
+            if (!SPECIES %in% occurences_s$SNAME) { # If the species is not present in the south region we set the SPI to NA
+                spi_vect_s <- c(spi_vect_s, NA)
+            } else {
+                aires_year_s <- aires_s[aires_s$year <= year,]
+                if (UNION) aires <- aires_year_s |> st_union() |> st_as_sf() |> suppressWarnings()
+                spi_year_s <- spi(occurences_s, aires)
+                spi_vect_s <- c(spi_vect_s, spi_year_s)
+            }
+            
             # North
-            aires_year_n <- aires_n[aires_n$year <= year,]
-            if (UNION) aires <- aires_year_n |> st_union() |> st_as_sf() |> suppressWarnings()
-            spi_year_n <- spi(occurences_n, aires)
-            spi_vect_n <- c(spi_vect_n, spi_year_n)
+            if (!SPECIES %in% occurences_n$SNAME) { # If the species is not present in the north region we set the SPI to NA
+                spi_vect_n <- c(spi_vect_n, NA)
+            } else {
+                aires_year_n <- aires_n[aires_n$year <= year,]
+                if (UNION) aires <- aires_year_n |> st_union() |> st_as_sf() |> suppressWarnings()
+                spi_year_n <- spi(occurences_n, aires)
+                spi_vect_n <- c(spi_vect_n, spi_year_n)
+            }
         }
 
         cat("SPI for", year, "is", spi_year, "(total),", spi_year_s, "(S),", spi_year_n, "(N)", "\n")
