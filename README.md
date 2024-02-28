@@ -32,12 +32,12 @@ Results are also saved in csv files per species in the `results` folder. They ma
 source("cluster/02-combine_results.r")
 ```
 
-The dataframe will be saved as `results/SPI.csv`.
+The dataframe will be saved as `results/SPI_ranges.csv`.
 
 ```r
 # View results
 source("scr/utils-visualisation.r")
-SPI <- read.csv("results/SPI.csv")
+SPI <- read.csv("results/SPI_ranges.csv")
 
 # Remove species with no name
 SPI <- SPI[SPI$SPECIES != "Information masquée",]
