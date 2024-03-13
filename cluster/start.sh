@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#SBATCH --array=1-190
+#SBATCH --array=1-225
 #SBATCH --account=def-dgravel
-#SBATCH -t 00:30:00
-#SBATCH --mem=1024
+#SBATCH -t 12:00:00
+#SBATCH --mem=10240
 #SBATCH --job-name=SPI
 #SBATCH --mail-user=victor.cameron@usherbrooke.ca
 #SBATCH --mail-type=ALL

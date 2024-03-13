@@ -1,7 +1,7 @@
 ###########
 # Save scripts in Beluga
 # Victor Cameron
-# September 18, 2023
+# November 16, 2023
 ##########
 
 # Files in cluster folder
@@ -12,9 +12,15 @@ system(paste0('scp ', dirCluster, ' vcameron@beluga.alliancecan.ca:projects/def-
 dirData <- paste(grep('.', paste0('data/', dir('data/')), value=TRUE, fixed=TRUE), collapse=' ')
 system(paste0('scp ', dirData, ' vcameron@beluga.alliancecan.ca:projects/def-dgravel/vcameron/SPI/data'))
 
+# Files in data_raw/range_maps folder
+dirDataRaw <- paste(grep('.', paste0('data_raw/', dir('data_raw/')), value=TRUE, fixed=TRUE), collapse=' ')
+system(paste0('scp ', dirDataRaw, ' vcameron@beluga.alliancecan.ca:projects/def-dgravel/vcameron/SPI/data_raw'))
+
 # Files in data/range_maps folder
-dirData <- paste(grep('.', paste0('data/range_maps/', dir('data/range_maps/')), value=TRUE, fixed=TRUE), collapse=' ')
-system(paste0('scp ', dirData, ' vcameron@beluga.alliancecan.ca:projects/def-dgravel/vcameron/SPI/data/range_maps'))
+# dirDataClean <- paste(grep('.', paste0('data_clean/', dir('data_clean/')), value=TRUE, fixed=TRUE), collapse=' ')
+# dirDataClean <- paste(c("data_clean/aires_union.gpkg", "data_clean/aires_protegees_nord.gpkg", "data_clean/aires_protegees_sud.gpkg", "data_clean/aires_repartition.gpkg", "data_clean/aires_repartition_sud.gpkg", "data_clean/aires_repartition_nord.gpkg"), collapse=' ')
+dirDataClean <- paste(c("data_clean/aires_protegees_nord.gpkg", "data_clean/aires_protegees_sud.gpkg", "data_clean/aires_repartition_sud.gpkg", "data_clean/aires_repartition_nord.gpkg"), collapse=' ')
+system(paste0('scp ', dirDataClean, ' vcameron@beluga.alliancecan.ca:projects/def-dgravel/vcameron/SPI/data_clean'))
 
 # File in scr folder
 dirScr <- paste(paste0('scr/', dir('scr/')), collapse=' ')
